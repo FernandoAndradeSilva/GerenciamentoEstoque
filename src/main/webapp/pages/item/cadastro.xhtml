@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:adm="http://github.com/adminfaces"
+                template="/WEB-INF/templates/template.xhtml">
+
+    <ui:define name="head-end">
+        <ui:param name="renderBreadCrumb" value="false"/>
+    </ui:define>
+
+
+    <ui:define name="title">
+        <p:outputLabel value="#{itemMB.idItem != null ? 'EDIÇAO DE ITEM' : 'CADASTRO DE ITEM'}"/>
+    </ui:define>
+
+
+    <ui:define name="body">
+
+
+        <f:metadata>
+            <f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+                     type="preRenderView"/>
+
+            <f:event type="preRenderView" listener="#{usuarioMB.verificaPermissaoCadastrar()}"/>
+
+
+
+            <f:viewParam name="tipo" value="#{itemMB.tipoItemNavegacao}"/>
+            <f:viewParam name="id" value="#{itemMB.idItem}"
+                         converter="javax.faces.Long"/>
+        </f:metadata>
+
+
+        <h:form id="cadastro">
+
+
+
+            <f:event listener="#{itemMB.inicializar()}" type="preRenderComponent"/>
+
+            <f:event listener="#{itemMB.bloqueiaEdicao()}"
+                     type="preRenderComponent"/>
+
+            <p:growl id="growlCadastro" sticky="false" life="6000"/>
+
+
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="hidden-sm hidden-xs">
+
+
+                        <div class="row">
+                            <div class="col-sm-4 ; align-left">
+                                <p:commandButton value="SALVAR"
+                                                 update="growlCadastro , cadastro , motivo" icon="fa fa-check"
+                                                 styleClass="btn-primary" action="#{itemMB.cadastraItem()}">
+                                    <p:confirm
+                                            disabled="#{itemMB.idItem == null ? 'true' : 'false'}"
+                                            header="ATENÇÃO!" message="CONFIRMAR MODIFICAÇÕES?"/>
+
+
+
+                                </p:commandButton>
+                                <p:confirmDialog style="text-align:center" closable="true"
+                                                 styleClass="box-success" widgetVar="Voltar" global="true"
+                                                 severity="alert" showEffect="fade" hideEffect="fade"
+                                                 responsive="true">
+                                    <p:spacer width="20"/>
+                                    <p:commandButton value="Sim" type="button"
+                                                     styleClass="ui-confirmdialog-yes btn-primary"
+                                                     icon="fa fa-check"/>
+                                    <p:commandButton value="Não" type="button"
+                                                     styleClass="ui-confirmdialog-no btn-danger" icon="fa fa-close"/>
+
+                                </p:confirmDialog>
+                            </div>
+
+                            <div class="col-sm-3 ; align-center ">
+                                <p:selectOneMenu value="#{itemMB.modificacao.motivo}" id="motivo" requiredMessage="Selecione o MOTIVO da ediçao"
+                                                 required="#{itemMB.idItem != null ? 'true' : 'false'}" rendered="#{itemMB.verificaMovimentacoes()}" columns="1">
+                                    <f:selectItem itemLabel="SELECIONE O MOTIVO DA EDIÇÃO" itemValue="" noSelectionOption="true" />
+                                    <f:selectItem itemLabel="ERRO DE CADASTRO " itemValue="Erro De Cadastro"/>
+                                    <f:selectItem itemLabel="ATUALIZAÇÃO DE INFORMAÇÕES" itemValue="Atualização De Informações"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col-sm-5 ; align-right">
+                                <p:button value="VOLTAR" icon="fa fa-close"
+                                          outcome="/pages/index.xhtml?faces-redirect-true"/>
+
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                    <p:separator/>
+
+                    <div align="center" style="#{itemMB.verificaMovimentacoes() == false ? 'display: none' : ''}">
+                        <h5>
+                            <b style="color:tomato">ATENÇÃO! O ITEM possui MOVIMENTAÇÕES, somente os campos
+                                'ESPECIFICAÇÃO' , 'ESTOQUE MÍNIMO' e 'OBSERVAÇÕES' podem ser modificados</b>
+                        </h5>
+                    </div>
+
+                    <div class="ui-fluid col-sm-6" align="left">
+
+                        <p:panelGrid columns="2" layout="grid" styleClass="margin-right: 5px">
+
+
+
+                            <p:outputLabel value="GRUPO"/>
+
+                                <p:selectOneMenu disabled="#{itemMB.verificaMovimentacoes()}"
+                                                 value="#{itemMB.categoria}" converter="categoriaConverter" id="Categoria">
+                                    <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"/>
+                                    <f:selectItems value="#{itemMB.categoriasDoUsuario()}" var="categoria"
+                                                   itemValue="#{categoria}"/>
+                                    <p:ajax event="change" update="Tipo , btNovoTipo , codigo , dlgNovoTipo"
+                                            listener="#{itemMB.selecionaCategoria()}"/>
+                                </p:selectOneMenu>
+
+
+                            <p:outputLabel value="CLASSE"/>
+                            <p:selectOneMenu disabled="#{itemMB.verificaMovimentacoes()}" id="Tipo"
+                                             value="#{itemMB.item.tipo}" styleClass="max-width: 50px"
+                                             converter="tipoConverter" required="true"
+                                             requiredMessage="Preencha o campo 'CLASSE' ">
+                                <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"
+                                              itemDisabled="false"/>
+                                <f:selectItems value="#{itemMB.tiposSelecao}" var="tipo"
+                                               itemValue="#{tipo}"/>
+                                <p:ajax event="change" listener="#{itemMB.selecionaTipo()}" update="cod , codigo , Tipo , Categoria"
+                                        />
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel id="cod"
+                                           value="#{itemMB.preCodigo == null ? 'CÓDIGO' : itemMB.preCodigo}"/>
+                            <p:inputText  required="true" maxlength="7"
+                                          disabled="#{itemMB.verificaMovimentacoes()}"
+                                          requiredMessage="Preencha o campo 'CÓDIGO' "
+                                          placeholder="Preencha o código"
+                                          id="codigo" value="#{itemMB.item.codigo}"
+                                          title="Preencha a NATUREZA e o TIPO"
+                                          validator="#{itemMB.verificaCodigoCadastrado}">
+                                <p:ajax event="change" update="growlCadastro,
+								 codigo"/>
+                            </p:inputText>
+
+                            <p:outputLabel id="descricao" value="DESCRIÇÃO"/>
+                            <p:inputText readonly="#{itemMB.verificaMovimentacoes()}"
+                                         required="true" requiredMessage="Preencha o campo 'DESCRIÇÃO' "
+                                         id="descr"
+                                         title="Preencha a NATUREZA e o TIPO"
+                                         placeholder="Preencha a descrição"
+                                         value="#{itemMB.item.descricao}">
+                            </p:inputText>
+
+                            <p:outputLabel value="UNIDADE DE MEDIDA"/>
+                            <p:selectOneMenu  disabled="#{itemMB.verificaMovimentacoes()}" id="unidadeDeMedida"
+                                              value="#{itemMB.item.unidadeDeMedida}" styleClass="max-width: 50px"
+                                              converter="unidadeDeMedidaConverter"
+                                              requiredMessage="Preencha o campo 'UNIDADE DE MEDIDA' ">
+                                <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"
+                                              itemDisabled="false"/>
+                                <f:selectItems value="#{unidadeDeMedidaMB.retornaUnidadesDeMedida()}" var="tipo"
+                                               itemValue="#{tipo}"/>
+
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel id="espec" value="ESPECIFICAÇÃO"/>
+                            <p:inputText id="especificacao"
+                                         value="#{itemMB.item.especificacao}">
+                            </p:inputText>
+
+                            <p:outputLabel id="estoqueMin" value="ESTOQUE MÍNIMO"/>
+                            <p:spinner required="true"
+                                       requiredMessage="Preencha o campo 'ESTOQUE MÍNIMO' "
+                                       id="estoqueMinimo" value="#{itemMB.item.estoqueMinimo}"
+                                       validatorMessage="O campo 'ESTOQUE MÍNIMO' precisa ser maior que 0">
+                                <f:validateLongRange minimum="0" maximum="9999"/>
+                            </p:spinner>
+
+                            <p:outputLabel id="observ" value="OBSERVAÇÕES"/>
+                            <p:inputTextarea id="observacoes"
+                                             value="#{itemMB.item.observacoes}">
+                            </p:inputTextarea>
+
+                        </p:panelGrid>
+
+                    </div>
+
+                    <div class="ui-fluid col-sm-1" align="left">
+
+                        <p:panelGrid columns="1" layout="grid">
+
+                            <p:commandButton styleClass="btn-sm btn-info"  rendered="#{!itemMB.verificaMovimentacoes()}"
+                                             title="CADASTRAR NOVO GRUPO" type="button" icon="fa fa-plus"
+                                             onclick="PF('DialogNovaCategoria').show();"/>
+
+                            <p:commandButton styleClass="btn-sm btn-info"   rendered="#{!itemMB.verificaMovimentacoes()}"
+                                             title="CADASTRAR NOVA CLASSE" type="button" icon="fa fa-plus" id="btNovoTipo"
+                                             onclick="PF('DialogNovoTipo').show();"/>
+                            <br></br>
+                            <br></br>
+                            <br></br>
+                            <br></br>
+                            <p:commandButton styleClass="btn-sm btn-info"  rendered="#{!itemMB.verificaMovimentacoes()}"
+                                             title="CADASTRAR NOVA UNIDADE DE MEDIDA" type="button" icon="fa fa-plus"
+                                             onclick="PF('DialogNovaUnidadeDeMedida').show();" id="btNovaUnidadeDeMedida"/>
+
+                        </p:panelGrid>
+
+
+                    </div>
+
+
+                    <div class="ui-fluid col-sm-5" align="center">
+                        <p:panelGrid
+                                rendered="#{itemMB.idItem == null ? 'false' : 'true'}"
+                                columns="2" layout="tabular">
+                            <f:facet name="header">
+                                <h4>ITEM</h4>
+                            </f:facet>
+
+                            <p:outputLabel value="GRUPO"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.tipo.categoria.nome}"/>
+
+                            <p:outputLabel value="CLASSE"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.tipo.descricao}"/>
+
+
+
+                            <p:outputLabel value="DESCRIÇAO"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.descricao}"/>
+
+                            <p:outputLabel value="CÓDIGO"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.codigo}"/>
+
+                            <p:outputLabel value="ESPECIFICAÇÃO"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.especificacao}"/>
+
+                            <p:outputLabel value="ESTOQUE MÍNIMO"/>
+                            <p:inputText readonly="true"
+                                         value="#{itemMB.itemOriginal.estoqueMinimo}"/>
+
+                            <p:outputLabel value="OBSERVAÇÕES"/>
+                            <p:inputTextarea style="width:100%" readonly="true" rows="2"
+                                             autoResize="false" value="#{itemMB.itemOriginal.observacoes}"/>
+
+                        </p:panelGrid>
+
+                    </div>
+                </div>
+            </div>
+        </h:form>
+
+        <p:dialog widgetVar="DialogNovaCategoria" id="dlgNovaCategoria"
+                  showEffect="fade" header="NOVO GRUPO" resizable="true"
+                  hideEffect="fade" modal="true" responsive="true" closable="true"
+                  styleClass="box-info" >
+
+            <p:ajax event="close" resetValues="true" update="formNovaCategoria , cadastro:Tipo , dlgNovoTipo , cadastro:btNovoTipo"/>
+            <p:ajax event="open" listener="#{itemMB.limpaNovaCategoria()}" update="formNovaCategoria"/>
+
+
+            <h:form id="formNovaCategoria">
+
+                <p:growl id="growlNovaCategoria" sticky="false" life="4000"/>
+
+
+                <p:panelGrid columns="2">
+
+                    <p:outputLabel value="SIGLA"/>
+                    <p:inputText maxlength="2" id="sigl" styleClass="form-control"
+                                 value="#{itemMB.novaCategoria.sigla}" required="true"
+                                 requiredMessage="Preencha o campo 'SIGLA'">
+                                 <p:ajax event="change" update="nome" />
+                    </p:inputText>
+
+                    <p:outputLabel value="DESCRIÇÃO"/>
+                    <p:inputText value="#{itemMB.novaCategoria.nome}"
+                                     required="true" requiredMessage="Preencha o campo 'DESCRIÇÃO' "
+                                     id="nome" validator="#{itemMB.verificaCategorriaCadastrada}">
+                                    <p:ajax event="change" update="growlNovaCategoria" />
+                    </p:inputText>
+                </p:panelGrid>
+
+                <br></br>
+
+                <div align="center">
+                    <p:commandButton value="SALVAR" update="cadastro:Categoria , cadastro:Tipo , cadastro:codigo , formNovaCategoria , growlNovaCategoria"
+                                     styleClass="btn-success" action="#{itemMB.cadastrarCategoria()}" />
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog widgetVar="DialogNovoTipo" id="dlgNovoTipo"
+                  showEffect="fade" header="NOVA CLASSE" resizable="true"
+                  hideEffect="fade" modal="true" responsive="true" closable="true"
+                  styleClass="box-info" appendTo="@(body)" width="25%">
+
+            <p:ajax event="close" resetValues="true" update="form_novoTipo , cadastro:Tipo , cadastro:codigo"/>
+
+
+            <h:form id="form_novoTipo">
+
+                <p:growl id="growlItens" sticky="false" life="4000"/>
+
+
+                <p:panelGrid columns="2">
+
+                    <p:outputLabel value="GRUPO"/>
+
+                    <p:selectOneMenu appendTo="@this" value="#{itemMB.categoria}" required="true"
+                                     converter="categoriaConverter" id="novaCategoria" requiredMessage="Preencha o campo 'GRUPO' ">
+                        <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"/>
+                        <f:selectItems value="#{itemMB.categoriasDoUsuario()}" var="categoria"
+                                       itemValue="#{categoria}"/>
+                                    <p:ajax event="change" update="descricaoNovaUnidadeMaterial" listener="#{itemMB.selecionaCategoriaNovoTipo()}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="SIGLA"/>
+                    <p:inputText maxlength="2" id="siglaNovaUnidadeMaterial" styleClass="form-control"
+                                 value="#{itemMB.novoTipo.sigla}" required="true"
+                                 requiredMessage="Preencha o campo 'SIGLA' ">
+                                <p:ajax event="change" update="descricaoNovaUnidadeMaterial"/>
+                    </p:inputText>
+
+
+                    <p:outputLabel value="DESCRIÇÃO"/>
+                    <p:inputText id="descricaoNovaUnidadeMaterial" styleClass="form-control"
+                                 value="#{itemMB.novoTipo.descricao}" required="true"
+                                 requiredMessage="Preencha o campo 'TIPO' "
+                                 validator="#{itemMB.verificaTipoCadastrado}">
+                        <p:ajax event="change" update="growlItens"/>
+                    </p:inputText>
+
+
+
+                </p:panelGrid>
+
+                <br></br>
+
+                <div align="center">
+                    <p:commandButton value="SALVAR" update="cadastro:Tipo , cadastro:Categoria , form_novoTipo, growlItens"
+                                     styleClass="btn-success" action="#{itemMB.cadastrarTipo()}"/>
+                </div>
+            </h:form>
+        </p:dialog>
+
+
+        <p:dialog widgetVar="DialogNovaUnidadeDeMedida" id="dlgNovaUnidadeDeMedida"
+                  showEffect="fade" header="NOVA UNIDADE DE MEDIDA" resizable="true"
+                  hideEffect="fade" modal="true" responsive="true" closable="true"
+                  styleClass="box-info"  width="25%">
+
+            <p:ajax event="close" update="cadastro:unidadeDeMedida" />
+
+            <h:form id="formNova">
+
+                <p:growl id="growlUnidadeDeMedida" sticky="false" life="4000"/>
+
+
+                <p:panelGrid columns="2">
+
+                    <p:outputLabel value="SIGLA"/>
+
+                    <p:inputText maxlength="2" styleClass="form-control"
+                                 value="#{unidadeDeMedidaMB.unidadeDeMedida.sigla}">
+                    </p:inputText>
+
+                    <p:outputLabel value="DESCRIÇÃO"/>
+                    <p:inputText styleClass="form-control"
+                                 value="#{unidadeDeMedidaMB.unidadeDeMedida.descricao}">
+                    </p:inputText>
+                </p:panelGrid>
+
+                <br></br>
+
+
+                <div align="center">
+                    <p:commandButton value="CADASTRAR" action="#{unidadeDeMedidaMB.salvarUnidadeDeMedida()}"
+                       update="formNova , growlUnidadeDeMedida"   styleClass="btn-success"  />
+                </div>
+            </h:form>
+
+        </p:dialog>
+
+
+
+        <p:dialog style="text-align:center;" header="SEÇAO FINALIZADA!"
+                  widgetVar="DialogSecaoFinalizada" modal="true" closable="false"
+                  showEffect="fade" hideEffect="fade" appendTo="@(body)" width="280"
+                  id="dlgsecaoFinalizada" resizable="false" styleClass="box-danger">
+
+
+            <p:button styleClass="btn-primary" value="LOGIN"
+                      outcome="/login.xhtml"/>
+
+        </p:dialog>
+
+        <p:dialog style="text-align:center;" header="USUÁRIO NÃO PERMITIDO" width="20%"
+                  widgetVar="DialogUsuarioNaoPermitido" modal="true" closable="false" position="top"
+                  showEffect="fade" hideEffect="fade" appendTo="@(body)"
+                  id="dlgDialogUsuarioNaoPermitido" resizable="false" styleClass="box-danger">
+
+
+            <p:button styleClass="btn-primary" value="VOLTAR"
+                      outcome="/pages/index.xhtml" />
+
+        </p:dialog>
+
+
+
+    </ui:define>
+
+</ui:composition>

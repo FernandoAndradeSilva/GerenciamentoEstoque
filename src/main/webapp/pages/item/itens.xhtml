@@ -1,0 +1,514 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:adm="http://github.com/adminfaces">
+
+
+    <f:event listener="#{itemMB.carregarItensUsuario()}"
+             type="preRenderComponent"/>
+
+    <div class="box box-primary">
+        <div class="box-header with-border">
+            <div id="main-buttons" class="hidden-sm hidden-xs">
+
+                <script> PrimeFaces.locales['pt'] = {
+                    closeText: 'Fechar',
+                    prevText: 'Anterior',
+                    nextText: 'Próximo',
+                    currentText: 'Começo',
+                    monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+                    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+                    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+                    dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+                    weekHeader: 'Semana',
+                    firstDay: 0,
+                    isRTL: false,
+                    showMonthAfterYear: false,
+                    yearSuffix: '',
+                    timeOnlyTitle: 'Só Horas',
+                    timeText: 'Tempo',
+                    hourText: 'Hora',
+                    minuteText: 'Minuto',
+                    secondText: 'Segundo',
+                    ampm: false,
+                    month: 'Mês',
+                    week: 'Semana',
+                    day: 'Dia',
+                    allDayText: 'Todo o Dia'
+                }; </script>
+                <h:form id="frm">
+
+                    <div class="row">
+
+                        <div class="col-sm-12">
+                            <div class="pull-left">
+                                <p:commandButton rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ||
+                                                usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'false' : 'true'}" value="NOVO ITEM"
+                                                 icon="fa fa-plus"
+                                                 styleClass="btn-primary"
+                                                 action="item/cadastro?faces-redirect=true">
+
+                                </p:commandButton>
+
+                                <p:spacer width="5"/>
+
+                                <p:commandButton
+                                        rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}"
+                                        value="RELATÓRIOS"
+                                        update="tabInicial:dlgRelatorios"
+                                        oncomplete="PF('DialogRelatorio').show()" styleClass="btn-success"
+                                        title="Exibir relatório financeiro" icon="fa fa-clipboard">
+
+                                </p:commandButton>
+
+
+                            </div>
+
+                            <div class="pull-right">
+                                <p:selectOneMenu id="Unidade" converter="unidadeConverter"
+                                                 value="#{itemMB.unidadeUsuario}"
+                                                 rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5}">
+                                    <f:selectItem itemLabel="TODAS" noSelectionOption="true"/>
+                                    <f:selectItems value="#{unidadeMB.unidades()}" var="unidade"
+                                                   itemLabel="#{unidade.nome}" itemValue="#{unidade}"/>
+                                    <p:ajax event="change" listener="#{itemMB.carregarItensUsuario()}" update="itemTable"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p:separator/>
+
+                    <p:dataTable sortBy="#{item.id}" sortOrder="DESCENDING"
+                                 id="itemTable" widgetVar="itemTable" rows="10"
+                                 value="#{itemMB.itensHash}" var="item" rowKey="#{item.id}"
+                                 paginator="true" paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                 currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+                        <p:ajax event="rowSelect" update="itemTable"/>
+
+                        <p:column headerText="CÓDIGO" filterBy="#{item.codigo}" style="width: 10% ; text-align: center"
+                                  sortBy="#{item.codigo}" filterStyle=" width: 80%" filterMatchMode="contains">
+                            <p:outputLabel value="#{item.codigo}"/>
+                        </p:column>
+
+                        <p:column headerText="DESCRIÇÃO" filterBy="#{item.descricao}"
+                                  sortBy="#{item.descricao}" filterMatchMode="contains">
+                            <p:outputLabel value="#{item.descricao} "/>
+                        </p:column>
+
+                        <p:column headerText="ESPECIFICAÇÃO"
+                                  filterBy="#{item.especificacao}" sortBy="#{item.especificacao}"
+                                  filterMatchMode="contains">
+                            <p:outputLabel value="#{item.especificacao}"/>
+
+
+                        </p:column>
+
+                        <p:column headerText="UM"
+                                  style="text-align: center; width: 5%">
+                            <p:outputLabel value="#{item.siglaUnDeMedida}"
+                                           title="#{item.nomeUnDeMedida}"/>
+
+
+                        </p:column>
+
+                        <p:column headerText="ENTRADAS"
+                                  rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}"
+                                  style="text-align: center; font-weight: bolder; color:#6495ED ; width: 10%">
+                            <p:outputLabel value="#{item.entradas}"/>
+                        </p:column>
+
+                        <p:column headerText="SAÍDAS"
+                                  rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}"
+                                  style="text-align: center; font-weight: bolder; width: 10%">
+                            <p:outputLabel value="#{item.saidas}"/>
+                        </p:column>
+
+                        <p:column headerText="SALDO"
+                                  style="text-align: center ; font-weight: bolder; color:MediumSeaGreen ; width: 10%">
+                            <p:outputLabel
+                                    title="#{item.saldo le item.estoqueMinimo and item.saldo gt 0 ?
+                                    'ITEM ABAIXO DO ESTOQUE MÍNIMO: ' : ''} #{item.saldo le item.estoqueMinimo and item.saldo gt 0 ? item.estoqueMinimo : ''}"
+                                    styleClass="#{item.saldo le item.estoqueMinimo and item.saldo gt 0 ? 'btn-danger' : ''}"
+                                    value="#{item.saldo}"/>
+                        </p:column>
+
+                        <p:column headerText="CUSTO UNITÁRIO(R$)"
+                                  rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}"
+                                  style="text-align: center; font-weight: bolder; width: 10% ">
+
+                            <p:outputLabel
+                                    value="#{item.custo}">
+                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4  ? 'false' : 'true'}"
+                                  style="text-align: center; font-weight: bolder; width:5%;">
+                            <p:commandButton
+                                    rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'false' : 'true'}"
+                                    styleClass="btn-sm btn-info" title="Ações"
+                                    id="dynaButton" type="button" icon="fa fa-bars"/>
+
+                            <p:tieredMenu overlay="true" trigger="dynaButton" my="left top"
+                                          at="left bottom" style="width:200px">
+
+                                <p:submenu label="OPERAÇÕES">
+
+
+                                    <p:menuitem value="Entrada" update="tabInicial:dlgMovimentacao"
+                                                oncomplete="PF('DialogMovimentacao').show()"
+                                                action="#{movimentacaoMB.configuraTipoMovimentacao('ENTRADA' , item.id)}"
+                                                icon="fa fa-plus">
+                                        <p:resetInput target="tabInicial:movimentacao"/>
+
+                                    </p:menuitem>
+
+                                    <p:menuitem value="Saída" update="tabInicial:dlgMovimentacao"
+                                                oncomplete="PF('DialogMovimentacao').show()"
+                                                action="#{movimentacaoMB.configuraTipoMovimentacao('SAIDA' , item.id)}"
+                                                icon="fa fa-mail-forward">
+                                        <p:resetInput target="tabInicial:movimentacao"/>
+                                    </p:menuitem>
+
+
+                                </p:submenu>
+
+                                <p:submenu label="EDIÇÃO">
+
+                                    <p:menuitem disabled="#{!usuarioMB.verificaPermissaoModificar(item.entradas)}"
+                                                value="Editar Item" immediate="true"
+                                                title="#{usuarioMB.verificaPermissaoModificar(item.entradas)? ''
+                                                : 'Solicite a edição ao Usuário ADMINISTRADOR'}"
+                                                outcome="/pages/item/cadastro.xhtml?id=#{item.id}"
+                                                icon="fa fa-edit">
+                                    </p:menuitem>
+
+
+                                    <p:menuitem value="Modificações do Item" immediate="true"
+                                                outcome="/pages/item/modificacoes.xhtml?id=#{item.id}"
+                                                icon="fa fa-list-alt">
+                                    </p:menuitem>
+
+
+                                </p:submenu>
+
+
+                                <p:submenu label="OBSERVAÇÕES">
+
+                                    <p:menuitem oncomplete="PF('DialogDetalhes').show()"
+                                                update="tabInicial:dlgDetalhes" value="Detalhes"
+                                                icon="fa fa-info" process="@this" action="#{itemMB.carregaItemObservacoes(item.id)}">
+
+                                    </p:menuitem>
+
+                                </p:submenu>
+
+                            </p:tieredMenu>
+
+
+                            <p:commandButton
+                                    rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5 ? 'true' : 'false'}"
+                                    oncomplete="PF('DialogDetalhes').show()" styleClass="btn-sm btn-info"
+                                    action="#{itemMB.carregaItemObservacoes(item.id)}"
+                                    update="tabInicial:dlgDetalhes" icon="fa fa-info" process="@this">
+
+                            </p:commandButton>
+                        </p:column>
+
+
+                    </p:dataTable>
+
+
+                </h:form>
+
+            </div>
+        </div>
+    </div>
+
+
+    <p:dialog widgetVar="DialogDetalhes" id="dlgDetalhes" showEffect="fade"
+              hideEffect="fade" header="OBSERVAÇÕES" modal="true" appendTo="@(body)"
+              responsive="true" closable="true" styleClass="box-success">
+
+        <p:ajax event="close" listener="#{itemMB.limpaItemObservacoes()}"/>
+
+        <p:panel header="#{itemMB.item.codigo} - #{itemMB.item.descricao}  ">
+            <h:form>
+                <p:inputTextarea style="width:100%" readonly="true"
+                   value="#{itemMB.item.observacoes == '' ? 'O item não possui OBSERVAÇÕES' : itemMB.item.observacoes}"/>
+            </h:form>
+        </p:panel>
+    </p:dialog>
+
+
+    <p:dialog widgetVar="DialogMovimentacao" id="dlgMovimentacao"
+              showEffect="fade" hideEffect="fade"
+              header="#{movimentacaoMB.movimentacao.tipo}" modal="true"
+              appendTo="@(body)" responsive="true" closable="true"
+              styleClass="box-success">
+
+        <p:ajax event="close" resetValues="true" listener="#{movimentacaoMB.limpaMovimentacao()}"
+                update="tabInicial:movimentacao:mtv , tabInicial:movimentacao:aplicacao
+                tabInicial:movimentacao:slc , tabInicial:movimentacao:cc , tabInicial:movimentacao:val "/>
+
+        <p:ajax event="close" listener="#{itemMB.carregarItensUsuario()}" update="tabInicial:frm:itemTable" />
+
+        <h:form id="movimentacao">
+            <p:panel header="#{movimentacaoMB.movimentacao.item.tipo.descricao}
+            - #{movimentacaoMB.movimentacao.item.descricao}">
+
+                <p:panelGrid id="movimentacaoGrid" columns="4">
+
+                    <p:outputLabel value="RESPONSÁVEL" rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}" />
+                    <p:inputText readonly="true" style="width: 100%" rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"
+                                 value="#{movimentacaoMB.retornaUsuarioDaSessao().nome}"/>
+
+
+                    <p:outputLabel value="QUANTIDADE" for="quant"/>
+                    <p:spinner id="quant" required="true" maxlength="5"
+                               requiredMessage="'QUANTIDADE' é obrigatório"
+                               value="#{movimentacaoMB.movimentacao.quantidade}"
+                               validator="#{movimentacaoMB.validaQuantidade}">
+                    </p:spinner>
+
+
+                    <p:outputLabel value="AJUSTE DE ESTOQUE: "
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"/>
+                    <p:selectBooleanButton style="align-items: center"
+                                           rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                                           value="#{movimentacaoMB.movimentacao.ajusteDeEstoque}"
+                                           onLabel="SIM" offLabel="NÃO">
+                        <p:ajax event="change" update="observ  , val"
+                                listener="#{movimentacaoMB.mediaAjusteDeEstoque()}"/>
+                    </p:selectBooleanButton>
+
+                    <p:outputLabel
+                            rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                            for="Fornecedor" value="FORNECEDOR"/>
+                    <p:selectOneMenu
+                            rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                            id="Fornecedor" converter="fornecedorConverter" effect="fade"
+                            appendTo="@this" value="#{movimentacaoMB.movimentacao.fornecedor}">
+                        <f:selectItem itemLabel="SEM FORNECEDOR" itemValue=""/>
+                        <f:selectItems value="#{fornecedorMB.fornecedores()}"
+                                       var="fornecedor" itemLabel="#{fornecedor.nome}"
+                                       itemValue="#{fornecedor}"/>
+
+                        <p:ajax event="change" update="observ"/>
+
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="RM" for="rm"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+                    <p:spinner id="rm" value="#{movimentacaoMB.movimentacao.rm}" maxlength="5"
+                               rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+
+                    <p:outputLabel
+                            rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"
+                            value="MOTIVO" for="mtv"/>
+                    <p:selectOneMenu value="#{movimentacaoMB.movimentacao.motivo}"
+                                     required="true" requiredMessage="MOTIVO é obrigatório"
+                                     rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"
+                                     dynamic="true" appendTo="@this" effect="fold" id="mtv">
+
+                        <p:ajax event="change" update="observ"/>
+
+                        <f:selectItem itemLabel="SELECIONE" itemValue=""/>
+                        <f:selectItems value="#{movimentacaoMB.motivoSaida()}"/>
+                        <f:validateRequired/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="SETOR"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+                    <p:selectOneMenu appendTo="@this" id="Setor" value="#{movimentacaoMB.setorSaida}"
+                                     converter="setorConverter"
+                                     rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}">
+                        <f:selectItem itemLabel="SELECIONE" itemValue="" noSelectionOption="true" />
+                        <f:selectItems value="#{setorMB.setores()}" var="setor"
+                                       itemLabel="#{setor.nome}" itemValue="#{setor}"/>
+                        <p:ajax event="change" update="cc"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="CENTRO DE CUSTO"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+                    <p:selectOneMenu appendTo="@this" id="cc" value="#{movimentacaoMB.movimentacao.centroCusto}"
+                                     converter="centroCustoConverter"
+                                     required="true" requiredMessage="'CENTRO CUSTO' é obrigatório"
+                                     rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}">
+                        <f:selectItem itemLabel="SELECIONE" noSelectionOption="true" />
+                        <f:selectItems value="#{movimentacaoMB.retornaCentrosDeCusto()}" var="centroCusto"
+                                       itemLabel="#{centroCusto.codigo} - #{centroCusto.nome}"
+                                       itemValue="#{centroCusto}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="APLICAÇÃO" required="true" requiredMessage="'APLICAÇÃO' é obrigatório"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+                    <p:selectOneMenu appendTo="@this" id="aplicacao" value="#{movimentacaoMB.movimentacao.aplicacao}"
+                                     converter="aplicacaoConverter" required="true"
+                                     requiredMessage="'APLICAÇÃO' é obrigatório"
+                                     rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}">
+                        <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"/>
+                        <f:selectItems value="#{aplicacaoMB.retornaAplicacoes()}" var="aplicacao"
+                                       itemLabel="#{aplicacao.nome}" itemValue="#{aplicacao}" />
+                    </p:selectOneMenu>
+
+
+
+                    <p:outputLabel value="SOLICITANTE"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}"/>
+                    <p:inputText style="width: 100%" required="true" requiredMessage="'SOLICITANTE' é obrigatório"
+                                 rendered="#{movimentacaoMB.movimentacao.tipo == 'SAIDA' ? 'true': 'false'}" id="slc"
+                                 value="#{movimentacaoMB.movimentacao.solicitante}"/>
+
+
+
+
+
+                    <p:outputLabel value="VALOR" for="val"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"/>
+                    <p:inputNumber
+                            rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                            size="23" id="val" decimalSeparator="," thousandSeparator="."
+                            symbol="R$"
+                            validatorMessage="'VALOR' precisa que ser maior que 0,00"
+                            value="#{movimentacaoMB.movimentacao.valor}">
+                        <f:validateDoubleRange minimum="0.01" maximum="999999.99"/>
+                    </p:inputNumber>
+
+
+                    <p:outputLabel for="cupomF"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                                   value="CUPOM FISCAL"/>
+                    <p:inputText style="width:100%" id="cupomF"
+                                 rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                                 value="#{movimentacaoMB.movimentacao.cupomFiscal}">
+                    </p:inputText>
+
+                    <p:outputLabel for="nof"
+                                   rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                                   value="NOTA FISCAL"/>
+                    <p:inputText style="width:100%" id="nof"
+                                 rendered="#{movimentacaoMB.movimentacao.tipo == 'ENTRADA' ? 'true': 'false'}"
+                                 value="#{movimentacaoMB.movimentacao.notaFiscal}">
+                    </p:inputText>
+
+
+                </p:panelGrid>
+
+
+                <div align="center">
+                    <p:panelGrid columns="1" style="width:100%">
+                        <p:inputTextarea style="width:100%" id="observ"
+                                         placeholder="Complemente com as OBSERVAÇÕES necessárias"
+                                         requiredMessage="#{movimentacaoMB.movimentacao.motivo == 'OUTROS' || movimentacaoMB.movimentacao.motivo ==
+                                         'AJUSTE DE INVENTÁRIO' ? 'Preencha nas observações o motivo' : movimentacaoMB.movimentacao.ajusteDeEstoque == true ?
+                                          'Preencha nas observações detalhes do ajuste' : ''}"
+                                         required="#{movimentacaoMB.movimentacao.motivo == 'OUTROS' || movimentacaoMB.movimentacao.motivo == 'AJUSTE DE INVENTÁRIO' ||
+                                         movimentacaoMB.movimentacao.ajusteDeEstoque == true  ? true : false}"
+                                         value="#{movimentacaoMB.movimentacao.observacoes}"/>
+                    </p:panelGrid>
+                </div>
+
+                <f:facet name="footer">
+                    <div align="center">
+                        <p:commandButton value="SALVAR" styleClass="btn-primary"
+                                         update="growlIndex , @form"
+                                         action="#{movimentacaoMB.salvarMovimentacao()}"/>
+                    </div>
+                </f:facet>
+
+
+            </p:panel>
+
+        </h:form>
+    </p:dialog>
+
+
+    <p:dialog widgetVar="DialogRelatorio" id="dlgRelatorios"
+              showEffect="fade" header="RELATORIOS" hideEffect="fade" modal="true" dynamic="true"
+              responsive="true" closable="true" styleClass="box-success" width="45%"
+              appendTo="@(body)">
+
+        <p:ajax event="close" resetValues="true" update="formRelats" listener="#{relatorioMB.limpaCamposRelatorio()}"/>
+        <h:form target="_blank" id="formRelats">
+
+            <p:panelGrid columns="2" style="width: 100% ; text-align: center">
+
+                <!--                <p:outputLabel value="TIPO DO ITEM"/>-->
+                <!--                <p:selectOneMenu style="text-align: left" height="200" appendTo="@this"-->
+                <!--                                 effect="fold" id="tipoItem" value="#{relatorioMB.tipoItemRelatorio}">-->
+                <!--                    <f:selectItem itemLabel="SELECIONE" itemValue=""/>-->
+                <!--                    <f:selectItems value="#{tipoMB.tipos()}" var="tip" itemValue="#{tip.descricao}"/>-->
+                <!--                    <p:ajax event="change" update="salvarButton"/>-->
+                <!--                </p:selectOneMenu>-->
+            </p:panelGrid>
+
+            <p:panel>
+                <div style="text-align: center">
+
+                    <p:outputLabel value="SELECIONE O TIPO DO RELATÓRIO"/>
+
+                    <p:selectOneRadio id="opcaoRelatorio" layout="responsive" value="#{relatorioMB.tipoRelatorio}"
+                                      columns="3">
+                        <f:selectItem itemLabel="SALDO" itemValue="SALDO"/>
+                        <f:selectItem itemLabel="ENTRADAS" itemValue="ENTRADAS"/>
+                        <f:selectItem itemLabel="SAÍDAS" itemValue="SAIDAS"/>
+                        <p:ajax event="change" update="salvarButton"/>
+
+                    </p:selectOneRadio>
+                </div>
+
+            </p:panel>
+
+            <div align="center">
+
+
+                <p:panel header="SELECIONE O PERÍODO" style="text-align: center">
+
+                    <p:panelGrid columns="2" style="width: 100%;">
+                        <p:calendar locale="pt" placeholder="Data Inicial" maxdate="#{relatorioMB.dataFinal}"
+                                    id="dtInicialButton"
+                                    size="10" mode="inline"
+                                    value="#{relatorioMB.dataInicial}">
+                            <p:ajax event="dateSelect" update="dtFinalButton , salvarButton"/>
+                        </p:calendar>
+
+
+                        <p:calendar locale="pt" placeholder="Data Final" mindate="#{relatorioMB.dataInicial}"
+                                    id="dtFinalButton"
+                                    size="10" mode="inline"
+                                    value="#{relatorioMB.dataFinal}">
+                            <p:ajax event="dateSelect" update="salvarButton , dtInicialButton"/>
+                        </p:calendar>
+
+
+                    </p:panelGrid>
+
+
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:commandButton disabled="#{relatorioMB.verificaCamposRelatorio()}" ajax="false"
+                                             action="#{relatorioMB.gerarRelatorio()}" id="salvarButton"
+                                             onclick="this.form.target='_blank'"
+                                             value="EMITIR RELATÓRIO"
+                                             styleClass="btn-success" icon="fa fa-clipboard">
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+
+
+                </p:panel>
+
+            </div>
+        </h:form>
+
+    </p:dialog>
+
+
+</ui:composition>

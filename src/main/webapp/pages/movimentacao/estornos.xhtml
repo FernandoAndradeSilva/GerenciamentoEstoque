@@ -1,0 +1,184 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:adm="http://github.com/adminfaces">
+
+
+	<div class="box box-primary">
+		<div class="box-header with-border">
+
+
+			<p:growl id="growlEstornos" sticky="false" globalOnly="true"
+				life="4000" />
+
+
+			<h:form id="estornos">
+
+				<div class="row">
+					<div class="col-sm-12">
+
+						<div class="pull-left">
+							<p:panelGrid style="text-align:center" id="buscaEntradas"
+										 columns="4">
+
+
+								<p:calendar size="8" placeholder="Data Inicial" id="bdDtInicial"
+											showOn="button" value="#{estornoMB.dataInicial}" >
+									<p:ajax event="dateSelect" listener="#{estornoMB.configuraMinData()}" update="bdDtFinal"/>
+								</p:calendar>
+
+								<p:calendar size="8" placeholder="Data Final" id="bdDtFinal" mindate="#{estornoMB.minDatePesquisa}"
+											showOn="button" value="#{estornoMB.dataFinal}" />
+
+
+
+								<p:commandButton title="Buscar" icon="fa fa-search" update="estornosTable"
+												 styleClass="btn-info" value="BUSCAR" resetValues="true"
+
+								>
+
+								</p:commandButton>
+
+								<p:commandButton title="Limpar Busca" action="#{estornoMB.limpaBusca()}" icon="fa fa-remove"
+												 styleClass="btn-danger" value="LIMPAR" update="bdDtInicial , bdDtFinal">
+								</p:commandButton>
+							</p:panelGrid>
+
+						</div>
+
+						<div class="pull-right">
+							<p:selectOneMenu id="Unidade" converter="unidadeConverter"
+											 rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5}"
+											 value="#{estornoMB.unidadeVisualizacao}">
+								<f:selectItems value="#{unidadeMB.unidades()}" var="unidade"
+											   itemLabel="#{unidade.nome}" itemValue="#{unidade}"/>
+								<p:ajax event="change" update="estornosTable"/>
+							</p:selectOneMenu>
+
+						</div>
+					</div>
+				</div>
+
+				<p:separator />
+
+				<p:dataTable sortBy="#{estorno.id}" sortOrder="DESCENDING"
+					id="estornosTable" widgetVar="itemTable01"
+					value="#{estornoMB.estornos()}" var="estorno"
+					rowKey="#{estorno.id}" rows="10" paginator="true"
+					
+					paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+					currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+					<p:column headerText="CÓDIGO"
+						filterBy="#{estorno.movimentacao.item.codigo}"
+						sortBy="#{estorno.movimentacao.item.codigo}"
+						filterMatchMode="contains">
+						<p:outputLabel value="#{estorno.movimentacao.item.codigo}" />
+					</p:column>
+
+					<p:column headerText="DESCRIÇÃO"
+						filterBy="#{estorno.movimentacao.item.descricao}"
+						sortBy="#{estorno.movimentacao.item.descricao}"
+						filterMatchMode="contains">
+						<p:outputLabel value="#{estorno.movimentacao.item.descricao}" />
+					</p:column>
+
+					<p:column style="text-align: center" headerText="QUANTIDADE">
+						<p:outputLabel value="#{estorno.movimentacao.quantidade}" />
+					</p:column>
+
+					<p:column style="text-align: center" headerText="DATA">
+						<p:outputLabel value="#{estorno.data}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+					</p:column>
+
+					<p:column style="text-align: center" headerText="RESPONSÁVEL">
+						<p:outputLabel value="#{estorno.usuario.nome}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+					</p:column>
+
+					<p:column style="text-align: center" headerText="TIPO"
+						sortBy="#{estorno.movimentacao.tipo}">
+						<p:outputLabel value="#{estorno.movimentacao.tipo}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+					</p:column>
+
+					<p:column style="text-align: center; width: 5%"  >
+						<p:commandButton update="tabInicial:dlgMotivoEstorno"
+										 icon="fa fa-info" title="Mais Informações"
+										 immediate="true" oncomplete="PF('DialogMotivoEstorno').show()"
+										 styleClass="btn-sm btn-info">
+							<f:setPropertyActionListener value="#{estorno}"
+														 target="#{estornoMB.estorno}" />
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+			</h:form>
+
+			<p:dialog widgetVar="DialogMotivoEstorno" id="dlgMotivoEstorno"
+					  showEffect="fade" hideEffect="fade" header="ESTORNO"
+					   responsive="true" styleClass="box-success" modal="true"
+					  appendTo="@(body)">
+				<p:panel
+						header="#{estornoMB.estorno.movimentacao.tipo} - #{estornoMB.estorno.movimentacao.item.descricao}">
+
+					<p:panelGrid columns="2" style="width: 100%">
+
+						<p:outputLabel>
+							<b> QUANTIDADE </b>
+						</p:outputLabel>
+						<p:outputLabel
+								value="#{estornoMB.estorno.movimentacao.quantidade}" />
+						<p:outputLabel>
+							<b> DATA DA #{estornoMB.estorno.movimentacao.tipo} </b>
+						</p:outputLabel>
+						<p:outputLabel value="#{estornoMB.estorno.movimentacao.data}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+
+						<p:outputLabel>
+							<b> DATA DO ESTORNO </b>
+						</p:outputLabel>
+						<p:outputLabel value="#{estornoMB.estorno.data}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+
+						<p:outputLabel>
+							<b> RESPONSÁVEL DA #{estornoMB.estorno.movimentacao.tipo}
+							</b>
+						</p:outputLabel>
+						<p:outputLabel
+								value="#{estornoMB.estorno.movimentacao.usuario.nome}" />
+
+						<p:outputLabel>
+							<b> RESPONSÁVEL DO ESTORNO </b>
+						</p:outputLabel>
+						<p:outputLabel
+								value="#{estornoMB.estorno.usuario.nome}" />
+
+						<p:outputLabel>
+							<b> MOTIVO DO ESTORNO </b>
+						</p:outputLabel>
+						<p:outputLabel value="#{estornoMB.estorno.motivo}" />
+
+
+					</p:panelGrid>
+
+				</p:panel>
+			</p:dialog>
+
+
+
+
+		</div>
+	</div>
+
+
+
+</ui:composition>

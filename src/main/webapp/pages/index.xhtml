@@ -1,0 +1,213 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+				xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:h="http://java.sun.com/jsf/html"
+				xmlns:p="http://primefaces.org/ui"
+				xmlns:f="http://java.sun.com/jsf/core" xmlns:P="http://java.sun.com/jsf/html"
+				template="/WEB-INF/templates/template.xhtml"
+				xmlns:adm="http://github.com/adminfaces">
+
+	<ui:define name="head-end">
+		<ui:param name="renderBreadCrumb" value="false" />
+
+		<style type="text/css">
+.ui-grid-row .ui-grid-col-2, .ui-grid-row .ui-grid-col-10 {
+	padding: 0.5em 0;
+	margin-left: 10px;
+}
+
+.ui-orderlist .ui-orderlist-list {
+	height: auto;
+}
+
+.ui-orderlist .ui-grid-row .ui-grid-col-2, .ui-orderlist .ui-grid-row .ui-grid-col-10
+	{
+	padding: 0;
+}
+
+
+
+.ui-dialog-title {
+	width: 88%;
+	display: flex;
+	justify-content: center;
+	margin-right: 0 !important;
+}
+
+.ui-dialog-buttonpane {
+	display: flex;
+	justify-content: right;
+	align-items: right;
+}
+</style>
+
+
+	</ui:define>
+
+	<ui:define name="title">
+		<p:outputLabel value="#{itemMB.tipoItemNavegacao}" />
+		<p:outputLabel value="TODOS ITENS"
+			rendered="#{itemMB.tipoItemNavegacao == null}"/>
+	</ui:define>
+
+
+
+	<ui:define name="body" >
+
+		<f:metadata>
+			<f:viewParam name="tipo" value="#{itemMB.tipoItemNavegacao}" />
+			<f:viewParam name="tipo" value="#{movimentacaoMB.tipoItemNavegacao}" />
+			<f:viewParam name="tipo" value="#{estornoMB.tipoItemNavegacao}" />
+			
+			<f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+				type="preRenderView"/>
+		</f:metadata>
+
+
+		<p:growl id="growlIndex" sticky="false" life="4000" />
+
+
+		<p:tabView id="tabInicial" dynamic="true" >			
+
+			<p:ajax event="tabChange"  listener="#{movimentacaoMB.tabChange}"
+				update="tabInicial" />
+			
+			<p:ajax event="tabChange"  listener="#{estornoMB.tabChange}"
+				update="tabInicial" />
+	
+
+			<p:tab id="tabItens" title="ITEM">
+				<ui:include src="/pages/item/itens.xhtml" />
+			</p:tab>
+
+			<p:tab rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}" id="tabEntradas" title="ENTRADAS">
+				<ui:include src="/pages/movimentacao/entradas.xhtml" />
+			</p:tab>
+
+			<p:tab rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}" id="tabSaidas" title="SAÍDAS">
+
+				<ui:include src="/pages/movimentacao/saidas.xhtml" />
+
+			</p:tab>
+
+			<p:tab rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 4 ? 'false' : 'true'}" id="tabEstornos" title="ESTORNOS">
+				<ui:include src="/pages/movimentacao/estornos.xhtml" />
+			</p:tab>
+
+
+		</p:tabView>
+
+		<p:dialog style="text-align:center;" header="SEÇAO FINALIZADA!"
+			widgetVar="DialogSecaoFinalizada" modal="true" closable="false"
+			showEffect="fade" hideEffect="fade" appendTo="@(body)" width="280"
+			id="dlgsecaoFinalizada" resizable="false" styleClass="box-danger">
+
+
+
+			<p:button styleClass="btn-primary" value="LOGIN"
+				outcome="/login.xhtml"/>
+
+		</p:dialog>
+
+		
+		<p:dialog style="text-align:center" widgetVar="DialogEstorno" id="dlgEstorno"
+				modal="true" showEffect="fade" hideEffect="fade" header="ESTORNO DE #{estornoMB.estorno.movimentacao.tipo} "
+				responsive="true" styleClass="box-success" appendTo="@(body)"
+				closable="true" resizable="false">
+
+				<p:ajax event="close" resetValues="true" update="estorno , tabInicial" listener="#{estornoMB.limpaEstorno()}" />
+
+
+				<h:form id="estorno">
+
+					<p:panel
+						header="#{estornoMB.estorno.movimentacao.item.descricao} - #{estornoMB.estorno.movimentacao.item.codigo}" >
+
+
+						<p:panelGrid columns="2" style="width:100%">
+
+							<p:outputLabel value="DATA:" />
+							<p:outputLabel  value="#{estornoMB.estorno.movimentacao.data}" >
+								<f:convertDateTime pattern="dd/MM/yyyy - HH:mm" />
+							</p:outputLabel>
+
+							<p:outputLabel value="QUANTIDADE:" />
+							<p:outputLabel
+								value="#{estornoMB.estorno.movimentacao.quantidade}" />
+
+							<p:outputLabel value="MOTIVO" for="motivo" />
+							<p:inputTextarea placeholder="DESCREVA O MOTIVO" id="motivo" required="true"
+								value="#{estornoMB.estorno.motivo}"
+								requiredMessage="Preencha o motivo do estorno" />
+
+						</p:panelGrid>
+
+						<f:facet name="footer">
+
+							<h:panelGrid width="100%" style="text-align:center">
+
+								<p:commandButton value="SALVAR" update="growlIndex , estorno"
+									action="#{estornoMB.estornarMovimentacao()}"
+									styleClass="btn-primary">
+
+								</p:commandButton>
+
+							</h:panelGrid>
+						</f:facet>
+					</p:panel>
+				</h:form>
+			</p:dialog>
+
+
+
+
+			<p:dialog widgetVar="DialogDetalhesMovimentacao" id="dlgDetalhesMovimentacao" showEffect="fade"
+				  hideEffect="fade" header="OBSERVAÇÕES #{movimentacaoMB.movimentacaoSelecionada.tipo}" modal="true" appendTo="@(body)"
+				  responsive="true" closable="true" styleClass="box-success">
+
+				<p:ajax event="close" />
+
+				<p:panel style="text-align: center">
+					<f:facet name="header" >
+						ITEM: 	#{movimentacaoMB.movimentacaoSelecionada.item.descricao}
+							<h5 style="#{movimentacaoMB.movimentacaoSelecionada.ajusteDeEstoque == true ? 'color:red' : 'display:none'}">
+								-AJUSTE DE ESTOQUE-</h5>
+					</f:facet>
+
+					<p:panelGrid columns="2" style="text-align: left">
+
+						<p:outputLabel value="RESPONSÁVEL:"/>
+						<p:outputLabel value="#{movimentacaoMB.movimentacaoSelecionada.usuario.nome}"/>
+
+						<p:outputLabel value="CODIGO DO ITEM:"/>
+						<p:outputLabel value="#{movimentacaoMB.movimentacaoSelecionada.item.codigo}"/>
+
+						<p:outputLabel value="DATA DA MOVIMENTAÇÃO:"/>
+						<p:outputLabel value="#{movimentacaoMB.movimentacaoSelecionada.data}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</p:outputLabel>
+
+					</p:panelGrid>
+
+
+
+					<h:form>
+
+						<p:panelGrid columns="1" style="width: 100%; text-align: center">
+						<p:outputLabel style="text-align: center" value="OBSERVAÇÕES:"/>
+						<p:inputTextarea style="width:100%" readonly="true"
+									 value="#{movimentacaoMB.movimentacaoSelecionada.observacoes == '' ? 'A movimentação não possui OBSERVAÇÕES' : movimentacaoMB.movimentacaoSelecionada.observacoes}"/>
+
+						</p:panelGrid>
+
+					</h:form>
+				</p:panel>
+			</p:dialog>
+
+
+		
+
+
+	</ui:define>
+
+
+</ui:composition>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:adm="http://github.com/adminfaces"
+                template="/WEB-INF/templates/template.xhtml">
+
+    <ui:define name="head-end">
+        <ui:param name="renderBreadCrumb" value="false"/>
+    </ui:define>
+
+
+    <ui:define name="title">
+        <p:outputLabel value="MODIFICAÇÕES DO ITEM"/>
+    </ui:define>
+
+
+    <ui:define name="body">
+
+
+        <f:metadata>
+
+            <f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+                     type="preRenderView"/>
+
+
+            <f:viewParam name="id" value="#{modificacaoMB.idItem}"
+                         converter="javax.faces.Long"/>
+        </f:metadata>
+
+
+        <h:form id="cadastro">
+
+
+            <f:event listener="#{modificacaoMB.inicializar()}" type="preRenderComponent"/>
+
+            <p:growl id="growlModificacoes" sticky="false" life="6000"/>
+
+
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="hidden-sm hidden-xs">
+
+
+                        <p:dataTable value="#{modificacaoMB.retornaModificaoesItem()}"
+                                     var="modificacao">
+
+                            <f:facet name="header">
+                                <h3><b>#{modificacaoMB.item.codigo} - #{modificacaoMB.item.descricao}</b></h3>
+                            </f:facet>
+
+                            <p:column style="width:30px">
+                                <p:rowToggler />
+                            </p:column>
+
+
+                            <p:column headerText="MOTIVO">
+                                <p:outputLabel value="#{modificacao.motivo}" />
+                            </p:column>
+
+                            <p:column headerText="RESPONSÁVEL DA MODIFICAÇÃO">
+                                <p:outputLabel value="#{modificacao.usuario.nome}" >
+                                    <f:convertDateTime pattern="dd-MM-yyyy  -  HH:mm" />
+                                </p:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="DATA" style="text-align: center">
+                                <p:outputLabel  value="#{modificacao.data}" >
+                                    <f:convertDateTime pattern="dd-MM-yyyy  -  HH:mm" />
+                                </p:outputLabel>
+                            </p:column>
+
+
+
+                            <p:rowExpansion>
+                                <div class="ui-fluid col-sm-6" align="left">
+
+                                    <p:panelGrid columns="2"
+                                                 style="width: 98%">
+                                        <f:facet name="header">
+                                            INFORMAÇÕES ANTERIORES
+                                        </f:facet>
+
+                                        <p:outputLabel value="DESCRIÇÃO:" />
+                                        <p:outputLabel value="#{modificacao.descricaoAntiga}" />
+
+                                        <p:outputLabel value="ESPECIFICAÇÃO:" />
+                                        <p:outputLabel value="#{modificacao.especificacaoAntiga}" />
+
+
+                                        <p:outputLabel value="ESTOQUE MÍNIMO" />
+                                        <p:outputLabel value="#{modificacao.estoqueMinimoAntigo}" />
+
+                                        <p:outputLabel value="OBSERVAÇÕES" />
+                                        <p:outputLabel value="#{modificacao.observacaoAntiga}" />
+
+                                    </p:panelGrid>
+                                </div>
+
+
+                                <div class="ui-fluid col-sm-6" align="right">
+                                    <p:panelGrid columns="2"
+                                                 style="width: 98%">
+                                        <f:facet name="header">
+                                            INFORMAÇÕES MODIFICADOS
+                                        </f:facet>
+
+                                        <p:outputLabel rendered="#{modificacao.descricaoNova != null}" value="DESCRIÇÃO:" />
+                                        <p:outputLabel rendered="#{modificacao.descricaoNova != null}" value="#{modificacao.descricaoNova}" />
+
+                                        <p:outputLabel rendered="#{modificacao.especificaoNova != null}" value="ESPECIFICAÇÃO:" />
+                                        <p:outputLabel rendered="#{modificacao.especificaoNova != null}" value="#{modificacao.especificaoNova}" />
+
+                                        <p:outputLabel rendered="#{modificacao.estoqueMinimoNovo != 0}" value="ESTOQUE MÍNIMO:" />
+                                        <p:outputLabel rendered="#{modificacao.estoqueMinimoNovo != 0}" value="#{modificacao.estoqueMinimoNovo}" />
+
+                                        <p:outputLabel rendered="#{modificacao.observacaoNova != null}" value="OBSERVAÇÕES:" />
+                                        <p:outputLabel rendered="#{modificacao.observacaoNova != null}" value="#{modificacao.observacaoNova}" />
+
+
+                                    </p:panelGrid>
+                                </div>
+                            </p:rowExpansion>
+
+
+                        </p:dataTable>
+
+
+                    </div>
+                </div>
+            </div>
+
+        </h:form>
+
+
+
+    </ui:define>
+
+</ui:composition>

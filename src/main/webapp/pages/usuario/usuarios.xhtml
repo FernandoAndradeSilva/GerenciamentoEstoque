@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:adm="http://github.com/adminfaces"
+	template="/WEB-INF/templates/template.xhtml">
+
+	<ui:define name="head-end">
+		<ui:param name="renderBreadCrumb" value="false" />
+	</ui:define>
+
+
+	<ui:define name="title">
+		<p:outputLabel value="USUÁRIOS CADASTRADOS NO SISTEMA" />
+	</ui:define>
+
+	<ui:define name="body">
+		<p:growl id="msgs" sticky="false" life="4000" />
+
+		<f:metadata>
+
+			<f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+				type="preRenderView"/>
+			
+			<f:event type="preRenderView" listener="#{usuarioMB.verificaUsuarioAdministrativo()}"/>
+
+			<f:event listener="#{usuarioMB.inicializar()}" type="preRenderView"/>
+
+		</f:metadata>
+
+		<h:form id="form" prependId="false">
+			<p:focus />
+
+			<div class="box box-primary">
+				<div class="box-header with-border">
+					<div id="main-buttons" class="hidden-sm hidden-xs">
+
+						<div>
+							<div class="pull-left">
+								<p:commandButton icon="fa fa-plus" value="NOVO USUÁRIO"
+												 styleClass="btn-primary" title="Cadastrar Novo Usuário"
+												 >
+								</p:commandButton>
+							</div>
+
+							<div class="pull-right">
+
+								<p:button value="VOLTAR" icon="fa fa-close"
+										  outcome="/pages/index.xhtml?faces-redirect-true"/>
+							</div>
+						</div>
+
+						<p:spacer/>
+						<p:spacer/>
+						<p:separator/>
+
+						<p:dataTable sortBy="#{usuario.id}" sortOrder="ASCENDING"
+							id="usersTable" widgetVar="usersTable" rows="10"
+							value="#{usuarioMB.usuarios()}" var="usuario"
+							rowKey="#{usuario.id}" paginator="true"
+							paginatorPosition="bottom"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink}
+                                   {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+							currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+							<p:column style="text-align: center ; width:5%" headerText="ATIVO">
+								<p:outputLabel id="ativo"
+											   styleClass="#{usuario.ativo ? 'btn-success' : 'btn-danger'} "
+											   value="#{usuario.ativo ? 'SIM' : 'NÃO'} " />
+							</p:column>
+
+							<p:column headerText="NOME" filterBy="#{usuario.nome}"
+								sortBy="#{usuario.nome}" filterMatchMode="contains">
+								<p:outputLabel value="#{usuario.nome}" id="nome">
+								</p:outputLabel>
+							</p:column>
+
+							<p:column headerText="EMAIL" filterBy="#{usuario.email}"
+								sortBy="#{usuario.email}" filterMatchMode="contains">
+								<p:outputLabel title="#{usuario.email}" value="#{usuario.email}"
+									id="email" />
+							</p:column>
+
+							<p:column style="text-align: center; width:20%"
+								headerText="NÍVEL DE ACESSO">
+								<p:outputLabel value="#{usuarioMB.retornaNivelUsuario(usuario.nivelDeAcesso)}"
+											   style="text-align: center;" id="nivel" />
+
+							</p:column>
+
+							<p:column style="text-align: center;" headerText="CATEGORIAS">
+
+								<p:selectCheckboxMenu  style="width:55%" id="categorias"
+									label="Mostrar" value="#{usuario.categorias}" filter="true"
+									filterMatchMode="startsWith" showHeader="true">
+									<f:selectItems itemDisabled="true"
+										value="#{categoriaMB.categorias()}" />
+								</p:selectCheckboxMenu>
+
+
+							</p:column >
+
+
+                            <p:column style="text-align: center;" headerText="SETOR">
+
+                               <p:outputLabel value="#{usuario.setor.nome}"/>
+
+                            </p:column>
+
+
+							<p:column style="text-align: center;  width: 10%" headerText="UNIDADE">
+
+								<p:outputLabel value="#{usuario.setor.unidade.nome}"/>
+
+							</p:column>
+
+
+							<p:column rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'false' : 'true'}"
+									  style="text-align: center;  width:10%;"
+								headerText="AÇOES">
+
+								<p:commandButton styleClass="btn-warning"
+									oncomplete="PF('DialogLiberacaoUsuario').show()"
+									title="EDITAR USUÁRIO" process="@this"
+									icon="fa fa-edit"
+									action="#{usuarioMB.lerCategorias(usuario.id)}"
+									update="dlgLiberacaoUsuario">
+									<f:setPropertyActionListener value="#{usuario}"
+											target="#{usuarioMB.usuario}" />
+
+
+								</p:commandButton>
+
+
+							</p:column>
+
+
+
+						</p:dataTable>
+
+					</div>
+				</div>
+
+			</div>
+
+		</h:form>
+
+
+
+		<p:dialog widgetVar="DialogLiberacaoUsuario" id="dlgLiberacaoUsuario"
+			showEffect="fade" header="#{usuarioMB.usuario.nome}" resizable="false"
+			hideEffect="fade" modal="true" responsive="true" closable="true"
+			styleClass="box-info" width="30%" >
+
+            <p:ajax event="close" update="usersTable"/>
+
+
+			<h:form id="formLiberacaoUsuario">
+
+				<p:growl id="growl" sticky="false" life="4000" />
+
+				<p:panel>
+					<p:panelGrid  columns="2" style="width: 100%" >
+
+
+                        <p:outputLabel  value="NOME"/>
+                        <p:inputText style="width: 100%" value="#{usuarioMB.usuario.nome}"/>
+
+                        <p:outputLabel value="EMAIL"/>
+                        <p:inputText style="width: 100%" value="#{usuarioMB.usuario.email}"/>
+
+                        <p:outputLabel value="SETOR"/>
+                        <p:selectOneMenu height="130" appendTo="@this" id="Setor" value="#{usuarioMB.usuario.setor}"
+                                         converter="setorConverter" required="true"
+                                         requiredMessage="Preencha o campo 'SETOR' ">
+
+                            <f:selectItems value="#{setorMB.setores()}" var="setor"
+                                           itemLabel="#{setor.nome}" itemValue="#{setor}" />
+                        </p:selectOneMenu>
+
+						<p:outputLabel value="Categorias" for="categorias" />
+						<p:selectCheckboxMenu onHide=""  style="width: 100%" converter="categoriaConverter" scrollHeight="110" panelStyle="width:250px" appendTo="@this"
+							id="categorias" label="Mostrar"
+							value="#{usuarioMB.categoriasLiberacao}"
+							filterMatchMode="startsWith" >
+							<f:selectItems var="categoria" value="#{categoriaMB.categorias()}" />
+						</p:selectCheckboxMenu>
+
+						<p:outputLabel value="Nível de Acesso" for="unidade" />
+						<p:selectOneMenu appendTo="@this" value="#{usuarioMB.usuario.nivelDeAcesso}"
+							requiredMessage="Preencha o campo 'Unidade'" id="unidade"
+							required="true">
+							<f:selectItem itemLabel="Admin" itemValue="2" />
+							<f:selectItem itemLabel="Colaborador" itemValue="3" />
+							<f:selectItem itemLabel="Convidado" itemValue="4" />
+						</p:selectOneMenu>
+
+						<p:outputLabel value="ATIVO"/>
+						<p:inputSwitch id="ativo" style="width: 40px"
+							value="#{usuarioMB.usuario.ativo}"
+									   onLabel="SIM" offLabel="NÃO" >
+							<p:ajax event="change" update="@this"></p:ajax>
+						</p:inputSwitch>
+
+					</p:panelGrid>
+					
+				
+					<f:facet name="footer">						
+					<div align="center">
+						<p:commandButton value="SALVAR" action="#{usuarioMB.salvarAlteracoesUsuario()}" styleClass="btn-success" />
+					</div>
+					</f:facet>
+
+				</p:panel>
+			</h:form>
+
+
+		</p:dialog>
+
+
+		<p:dialog style="text-align:center;" header="USUÁRIO NÃO PERMITIDO" width="20%"
+				  widgetVar="DialogUsuarioNaoPermitido" modal="true" closable="false" position="top"
+				  showEffect="fade" hideEffect="fade" appendTo="@(body)"
+				  id="dlgDialogUsuarioNaoPermitido" resizable="false" styleClass="box-danger">
+
+
+			<p:button styleClass="btn-primary" value="VOLTAR"
+					  outcome="/pages/index.xhtml" />
+
+		</p:dialog>
+
+
+
+
+
+	</ui:define>
+
+</ui:composition>

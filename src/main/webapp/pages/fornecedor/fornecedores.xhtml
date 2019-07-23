@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:adm="http://github.com/adminfaces"
+	template="/WEB-INF/templates/template.xhtml">
+
+
+
+
+	<ui:define name="head-end">
+		<ui:param name="renderBreadCrumb" value="false" />
+	</ui:define>
+
+
+	<ui:define name="title">
+		<p:outputLabel value="FORNECEDORES" />
+	</ui:define>
+
+
+
+	<ui:define name="body">
+
+		<p:growl id="msgs" sticky="false" life="4000" />
+
+		<f:metadata>
+
+			<f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+				type="preRenderView"/>
+
+			<f:event type="preRenderView" listener="#{usuarioMB.verificaPermissaoCadastrar()}"/>
+
+		</f:metadata>
+
+		<h:form id="form" prependId="false">
+			<p:focus />
+
+
+
+
+			<div class="box box-primary">
+				<div class="box-header with-border">
+					<div id="main-buttons" class="hidden-sm hidden-xs">
+
+						<div>
+							<div class="pull-left">
+								<p:menuButton value="NOVO CADASTRO" icon="fa fa-plus" >
+									<p:menuitem  value="Pessoa Jurídica" actionListener="#{fornecedorMB.selecionaTipoFornecedor(1)}"
+												oncomplete="PF('DialogNovoFornecedor').show()" update="dlgDialogNovoFornecedor" >
+											<p:resetInput target="formNovoFornecedor"/>
+									</p:menuitem>
+
+									<p:menuitem  value="Pessoa Física" actionListener="#{fornecedorMB.selecionaTipoFornecedor(2)}"
+												 oncomplete="PF('DialogNovoFornecedor').show()" update="dlgDialogNovoFornecedor" >
+										<p:resetInput target="formNovoFornecedor"/>
+									</p:menuitem>
+
+									<p:menuitem  value="Outros" actionListener="#{fornecedorMB.selecionaTipoFornecedor(3)}"
+												 oncomplete="PF('DialogNovoFornecedor').show()" update="dlgDialogNovoFornecedor" >
+										<p:resetInput target="formNovoFornecedor"/>
+									</p:menuitem>
+								</p:menuButton>
+
+
+
+
+							</div>
+
+
+							<div class="pull-right">
+
+								<p:button value="VOLTAR" icon="fa fa-close"
+										  outcome="/pages/index.xhtml?faces-redirect-true"/>
+
+							</div>
+
+						</div>
+
+						<p:spacer/>
+						<p:spacer/>
+						<p:separator/>
+
+
+						<p:dataTable reflow="true" sortOrder="ASCENDING" id="usersTable"
+							widgetVar="usersTable" rows="10"
+							value="#{fornecedorMB.fornecedores()}" var="fornecedor"
+							rowKey="#{fornecedor.id}" paginator="true"
+							paginatorPosition="bottom"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink}
+                                   {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+							currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+
+
+							<p:column headerText="RAZÃO SOCIAL / NOME"  filterBy="#{fornecedor.nome}"
+								sortBy="#{fornecedor.nome}" id="nome" filterMatchMode="contains">
+								<p:outputLabel title="#{fornecedor.observacao}" value="#{fornecedor.nome}"/>
+							</p:column>
+
+							<p:column headerText="NOME FANTASIA"  filterBy="#{fornecedor.nomeFantasia}"
+									  sortBy="#{fornecedor.nomeFantasia}" id="nomeF" filterMatchMode="contains">
+								<p:outputLabel title="#{fornecedor.nomeFantasia}" value="#{fornecedor.nomeFantasia}"/>
+							</p:column>
+
+							<p:column headerText="CNPJ / CPF"  filterBy="#{fornecedor.tipoFornecedor == 'PessoaFisica'  ? fornecedor.cpf :
+								 (fornecedor.tipoFornecedor == 'PessoaJuridica' ? fornecedor.cnpj : 'Outros')}"
+									  sortBy="#{fornecedor.tipoFornecedor == 'PessoaFisica'  ? fornecedor.cpf :
+								 (fornecedor.tipoFornecedor == 'PessoaJuridica' ? fornecedor.cnpj : 'Outros')}"
+									  id="cnpj" filterMatchMode="contains">
+								<p:outputLabel value="#{fornecedor.tipoFornecedor == 'PessoaFisica'  ? fornecedor.cpf :
+								 (fornecedor.tipoFornecedor == 'PessoaJuridica' ? fornecedor.cnpj : 'OUTROS')}"/>
+							</p:column>
+
+
+
+							<p:column headerText="EMAIL"  id="email">
+								<p:outputLabel title="#{fornecedor.email}"
+									value="#{fornecedor.email}"/>
+
+							</p:column>
+
+							<p:column headerText="TELEFONE" id="tel">
+								<p:outputLabel value="#{fornecedor.tel}"/>
+							</p:column>
+
+							<p:column headerText="CONTATO"  id="contato">
+								<p:outputLabel value="#{fornecedor.contato}"/>
+
+							</p:column>
+
+							<p:column
+								style="text-align: center; font-weight: bolder; width:10%;">
+								<p:commandButton rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'false' : 'true'}"
+												 styleClass="btn-sm btn-info" title="Ações"
+												 id="dynaButton" type="button" icon="fa fa-bars" />
+
+								<p:tieredMenu overlay="true" trigger="dynaButton" my="left top"
+											  at="left bottom" style="width:200px">
+
+									<p:menuitem value="OBSERVAÇÕES" icon="fa fa-info"
+												update="dlgObservadoresFornecedor"
+												oncomplete="PF('DialogObservadoresFornecedor').show()">
+										<f:setPropertyActionListener value="#{fornecedor}"
+											target="#{fornecedorMB.fornecedor}" />
+									</p:menuitem>
+
+									<p:menuitem value="EDITAR" icon="fa fa-edit"
+										update="dlgDialogNovoFornecedor"
+										oncomplete="PF('DialogNovoFornecedor').show()">
+										<f:setPropertyActionListener value="#{fornecedor}"
+											target="#{fornecedorMB.fornecedor}" />
+									</p:menuitem>
+
+
+									<p:menuitem value="EXCLUIR" update="msgs , usersTable" icon="fa fa-trash"
+												action="#{fornecedorMB.excluirFornecedor(fornecedor.id)}">
+										<p:confirm  header="CONFIRMAÇÃO" message="DESEJA EXCLUIR?"
+													icon="pi pi-exclamation-triangle" />
+									</p:menuitem>
+
+
+								</p:tieredMenu>
+
+								<p:confirmDialog closable="false" style="text-align: center" width="15%" global="true"
+												 showEffect="fade" hideEffect="fade">
+									<p:commandButton value="Sim" style="margin-left: 20%"
+													 type="button" styleClass="ui-confirmdialog-yes btn-danger"/>
+									<p:commandButton value="Não" style="margin-right: 20%"
+													 type="button" styleClass="ui-confirmdialog-no btn-info" />
+
+								</p:confirmDialog>
+
+
+								<p:commandButton rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'true' : 'false'}"
+											update="dlgObservadoresFornecedor" styleClass="btn-sm btn-info" icon="fa fa-info"
+											oncomplete="PF('DialogObservadoresFornecedor').show()">
+									<f:setPropertyActionListener value="#{fornecedor}"
+																 target="#{fornecedorMB.fornecedor}" />
+								</p:commandButton>
+
+
+							</p:column>
+
+						</p:dataTable>
+
+					</div>
+				</div>
+
+			</div>
+
+		</h:form>
+
+
+		<p:dialog widgetVar="DialogNovoFornecedor"
+			id="dlgDialogNovoFornecedor" showEffect="fade" header="CADASTRO #{fornecedorMB.retornaTipo()}"
+			hideEffect="fade" modal="true" responsive="true" closable="true"
+			styleClass="box-success" appendTo="@(body)">
+
+			<p:ajax event="close" resetValues="true" listener="#{fornecedorMB.resetaFornecedor()}"
+				update="formNovoFornecedor , form" />
+				
+			
+
+
+			<h:form id="formNovoFornecedor">
+
+				<f:event listener="#{fornecedorMB.inicializar()}"
+				type="preRenderComponent"/>
+
+				<p:panel header="NOVO FORNECEDOR">
+
+					<p:panelGrid columns="4">
+
+						<p:outputLabel value="RAZÃO SOCIAL / NOME:" for="nome" />
+						<p:inputText required="true" id="nome"
+							requiredMessage="O campo 'RAZÃO SOCIAL' é obrigatório"
+							value="#{fornecedorMB.fornecedor.nome}"
+							validator="#{fornecedorMB.verificaNomeFornecedor}">
+							<p:ajax event="change" update="msgs , nome"/>
+						</p:inputText>
+
+						<p:outputLabel value="NOME FANTASIA:" for="nomeF" rendered="#{fornecedorMB.fornecedor.tipoFornecedor != 'Outros'}"/>
+						<p:inputText id="nomeF"  value="#{fornecedorMB.fornecedor.nomeFantasia}"
+									 rendered="#{fornecedorMB.fornecedor.tipoFornecedor != 'Outros'}">
+						</p:inputText>
+
+						<p:outputLabel value="CNPJ:"  rendered="#{fornecedorMB.fornecedor.tipoFornecedor == 'PessoaJuridica' ? true : false}"/>
+						<p:inputMask mask="99.999.999/9999-99" id="cnpj" rendered="#{fornecedorMB.fornecedor.tipoFornecedor == 'PessoaJuridica' ? true : false}"
+									 value="#{fornecedorMB.fornecedor.cnpj}"
+									 validator="#{fornecedorMB.verificaCnpjFornecedor}">
+							         <p:ajax event="change" update="msgs"/>
+						</p:inputMask>
+
+						<p:outputLabel value="CPF:"  rendered="#{fornecedorMB.fornecedor.tipoFornecedor == 'PessoaFisica' ? true : false}"/>
+						<p:inputMask mask="999999999-99" id="cpf" rendered="#{fornecedorMB.fornecedor.tipoFornecedor == 'PessoaFisica' ? true : false}"
+									 value="#{fornecedorMB.fornecedor.cpf}"
+									 validator="#{fornecedorMB.verificaCpfFornecedor}">
+									 <p:ajax event="change" update="msgs"/>
+						</p:inputMask>
+
+						<p:outputLabel value="E-MAIL:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.email}"/>
+
+						<p:outputLabel value="TELEFONE:" />
+						<p:inputMask id="tel" value="#{fornecedorMB.fornecedor.tel}"
+							mask="(99) 9999-9999"/>
+							
+						<p:outputLabel value="CELULAR:" />
+						<p:inputMask id="cel" value="#{fornecedorMB.fornecedor.cel}"
+							mask="(99) 99999-9999"/>
+							
+						<p:outputLabel value="CONTATO:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.contato}"/>
+
+						<p:outputLabel value="CEP:" />
+						<p:inputMask  mask="99.999-999"
+									 value="#{fornecedorMB.fornecedor.cep}">
+                            <p:ajax event="change" listener="#{fornecedorMB.buscaCEP()}"
+							update="end , bairro , cidade , estado , num, complemento , msgs"/>
+
+
+                        </p:inputMask>
+
+						<p:outputLabel value="ENDEREÇO:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.endereco}" id="end"
+									 />
+
+						<p:outputLabel value="NÚMERO:" />
+						<p:inputText  value="#{fornecedorMB.fornecedor.numero}" id="num"/>
+
+						<p:outputLabel value="COMPLEMENTO:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.complemento}" id="complemento"/>
+
+						<p:outputLabel value="BAIRRO:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.bairro}" id="bairro"/>
+
+						<p:outputLabel value="CIDADE:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.cidade}" id="cidade"/>
+
+						<p:outputLabel value="ESTADO:" />
+						<p:inputText value="#{fornecedorMB.fornecedor.estado}" id="estado"/>
+
+					</p:panelGrid>
+
+
+					<div align="center">
+						<p:panelGrid columns="1" style="width:100%">
+
+							<p:inputTextarea style="width:100%"
+								placeholder="Observações complementares sobre o FORNECEDOR"
+								value="#{fornecedorMB.fornecedor.observacao}">
+							</p:inputTextarea>
+						</p:panelGrid>
+					</div>
+
+
+					<br></br>
+					<div style="text-align: center">
+
+						<p:commandButton styleClass="btn-info" value="SALVAR"
+							action="#{fornecedorMB.salvar()}"
+							update="formNovoFornecedor , msgs">
+						</p:commandButton>
+					</div>
+				</p:panel>
+
+			</h:form>
+
+		</p:dialog>
+
+
+
+		<p:dialog widgetVar="DialogObservadoresFornecedor"
+			id="dlgObservadoresFornecedor" showEffect="fade" hideEffect="fade"
+			header="OBSERVAÇÕES" modal="true" appendTo="@(body)"
+			responsive="true" closable="true" styleClass="box-success"
+			width="30%">
+
+			<p:panel header="#{fornecedorMB.fornecedor.nome}">
+				<p:outputLabel value="#{fornecedorMB.fornecedor.observacao}" />
+			</p:panel>
+		</p:dialog>
+
+
+
+
+	</ui:define>
+
+</ui:composition>

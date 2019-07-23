@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:adm="http://github.com/adminfaces">
+
+
+    <ul class="sidebar-menu" id="menu">
+
+        <li>
+            <p:link href="/pages/index.xhtml">
+                <i class="fa fa-home"></i>
+                <span><b>HOME</b></span>
+            </p:link>
+        </li>
+
+
+        <ui:repeat value="#{usuarioMB.categoriasDoUsuario()}" var="categoria">
+            <li><p:link>
+                <i class="fa fa-chevron-right"></i>
+                <span>
+						<b>#{categoria.nome}</b>
+					</span>
+            </p:link>
+                <ul class="treeview-menu">
+                    <li><ui:repeat var="tipo" value="#{categoria.tipos}">
+                        <p:link href="/pages/index.xhtml?tipo=#{tipo.descricao}">
+                            <span><b>#{tipo.descricao}</b></span>
+                        </p:link>
+                    </ui:repeat></li>
+                </ul>
+            </li>
+        </ui:repeat>
+
+        <li style="#{usuarioMB.verificaPermissaoColaborador() ? '' : 'display:none'}" >
+            <p:link>
+                <i class="fa fa-gears"></i>
+                <span>
+                    <b>GERENCIAMENTO</b>
+                </span>
+            </p:link>
+            <ul class="treeview-menu">
+                <li>
+                    <p:link style="#{usuarioMB.verificaPermissaoAdministativa() ? '' : 'display:none'}" href="/pages/usuario/usuarios.xhtml">
+                        <span><b>USUÁRIOS</b></span>
+                    </p:link>
+
+                    <p:link style="#{usuarioMB.verificaPermissaoColaborador() ? '' : 'display:none'}"  href="/pages/fornecedor/fornecedores.xhtml">
+                        <span><b>FORNECEDORES</b></span>
+                    </p:link>
+
+                    <p:link style="#{usuarioMB.verificaPermissaoAdministativa() ? '' : 'display:none'}" href="/pages/setor/setores.xhtml">
+                        <span><b>SETORES</b></span>
+                    </p:link>
+
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+
+</ui:composition>

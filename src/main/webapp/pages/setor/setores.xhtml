@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="/WEB-INF/templates/template.xhtml">
+
+
+
+
+    <ui:define name="head-end">
+        <ui:param name="renderBreadCrumb" value="false" />
+    </ui:define>
+
+
+    <ui:define name="title">
+        <p:outputLabel value="SETORES" />
+    </ui:define>
+
+
+
+    <ui:define name="body">
+
+        <f:metadata>
+            <f:event listener="#{usuarioMB.verificaUsuarioLogado()}"
+                     type="preRenderView"/>
+        </f:metadata>
+
+
+        <p:growl id="msgs" sticky="false" life="4000" />
+
+
+        <h:form id="form" prependId="false">
+            <p:focus />
+
+
+
+
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <div id="main-buttons" class="hidden-sm hidden-xs">
+
+                        <div>
+                            <div class="pull-left">
+                                <p:commandButton icon="fa fa-plus" value="NOVO SETOR" action="#{setorMB.limpaNovoSetor()}"
+                                                 oncomplete="PF('DialogNovoSetor').show()" update="dlgNovoSetor"
+                                                 styleClass="btn-primary" title="Cadastrar um novo Setor">
+                                </p:commandButton>
+
+                                <p:spacer width="5px"/>
+
+                                <p:commandButton value="APLICAÇÕES"  oncomplete="PF('DialogAplicações').show()"
+                                                 styleClass="btn-info" title="Mostra as Aplicações">
+
+                                </p:commandButton>
+                            </div>
+
+
+                            <div class="pull-right">
+                                <p:button value="VOLTAR" icon="fa fa-close"
+                                          outcome="/pages/index.xhtml?faces-redirect-true"/>
+                            </div>
+
+                        </div>
+
+                        <p:spacer/>
+                        <p:spacer/>
+                        <p:separator/>
+
+
+                        <p:dataTable sortBy="#{setor.id}" sortOrder="ASCENDING"
+                                     id="usersTable" widgetVar="usersTable" rows="10"
+                                     value="#{setorMB.setores()}" var="setor"
+                                     rowKey="#{setor.id}" paginator="true" rowExpandMode="single"
+                                      paginatorPosition="bottom"
+                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink}
+                                   {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                      currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+                            <p:ajax event="rowToggle" listener="#{centroCustoMB.selecionaSetor(setor)}"
+                                    update="rowExp , dlgUsuariosSetor"  />
+
+
+                            <p:column style="width:40px ; text-align: center" headerText="C.C." >
+                                <p:rowToggler  />
+                            </p:column>
+
+                            <p:column headerText="CÓDIGO" style="width: 10% ; text-align: center" filterBy="#{setor.codigo}"
+                                      sortBy="#{setor.codigo}" id="codigo" filterMatchMode="contains">
+                                <p:outputLabel value="#{setor.codigo}"/>
+                            </p:column>
+
+
+                            <p:column headerText="NOME"  filterBy="#{setor.nome}"
+                                      sortBy="#{setor.nome}" id="nome" filterMatchMode="contains">
+                                <p:outputLabel value="#{setor.nome}"/>
+                            </p:column>
+
+                            <p:column headerText="GESTOR"  filterBy="#{setor.gestor}"
+                                      sortBy="#{setor.gestor}" id="gestor" filterMatchMode="contains">
+                                <p:outputLabel value="#{setor.gestor}"/>
+                            </p:column>
+
+                            <p:column headerText="UNIDADE" style="width: 20% ; text-align: center"  filterBy="#{setor.unidade}"
+                                      sortBy="#{setor.unidade}" id="unidade" filterMatchMode="contains">
+                                <p:outputLabel value="#{setor.unidade.nome}"/>
+                            </p:column>
+
+
+                            <p:column style="text-align: center; font-weight: bolder; width:10%;">
+                                <p:commandButton
+                                        styleClass="btn-sm btn-info" title="Ações"
+                                        id="dynaButton" type="button" icon="fa fa-bars"/>
+
+                                <p:tieredMenu overlay="true" trigger="dynaButton" my="left top"
+                                              at="left bottom" style="width:200px">
+
+
+
+                                    <p:menuitem value="CENTRO DE CUSTO" icon="fa fa-plus"
+                                                update="dlgNovoCentroCusto"
+                                                oncomplete="PF('DialogNovoCentroCusto').show()">
+                                        <f:setPropertyActionListener value="#{setor}"
+                                                                     target="#{centroCustoMB.novoCentroCusto.setor}"/>
+                                    </p:menuitem>
+
+                                    <p:menuitem value="EDITAR SETOR" icon="fa fa-edit" update="dlgNovoSetor"
+                                                oncomplete="PF('DialogNovoSetor').show()">
+                                        <f:setPropertyActionListener value="#{setor}"
+                                                                     target="#{setorMB.novoSetor}"/>
+                                    </p:menuitem>
+
+                                    <p:menuitem value="EXCLUIR SETOR" icon="fa fa-trash"
+                                                update="msgs , usersTable"
+                                                action="#{setorMB.excluirSetor(setor.id)}">
+                                        <p:confirm header="CONFIRMAÇÃO" message="DESEJA EXCLUIR?" icon="pi pi-exclamation-triangle" />
+                                    </p:menuitem>
+
+
+                                </p:tieredMenu>
+
+                            </p:column>
+
+
+                            <p:rowExpansion id="rowExp" >
+                                <p:dataList  value="#{centroCustoMB.listarPorSetor()}" var="centroCusto" id="centrosCusto" >
+                                    <f:facet name="header" >
+
+                                        <div class="ui-grid-row">
+                                        <div class="pull-left">
+                                            CENTROS DE CUSTO
+                                        </div>
+                                        <div class="pull-right">
+                                            <p:commandButton styleClass="btn-sm btn-primary" value="USUÁRIOS"
+                                                             oncomplete="PF('DialogUsuariosSetor').show()"
+                                                             update="dlgUsuariosSetor"
+                                                             action="#{setorMB.carregaSetoresUsuario(setor.id)}"
+                                                             title="Mostra os Usuários cadastrados no Setor" icon="fa fa-users">
+                                            </p:commandButton>
+                                        </div>
+                                        </div>
+                                    </f:facet>
+                                    <p:commandButton styleClass="btn-xs btn-danger" icon="fa fa-trash" title="Remover"
+                                                     action="#{centroCustoMB.excluiirCentroDeCusto(centroCusto.id)}"
+                                                     update="msgs , centrosCusto">
+                                        <div align="center">
+                                            <p:confirm  header="CONFIRMAÇÃO" message="DESEJA EXCLUIR?"
+                                                        icon="pi pi-exclamation-triangle" />
+                                        </div>
+                                    </p:commandButton>
+
+                                        <p:confirmDialog closable="false" style="text-align: center" width="15%" global="true"
+                                                         showEffect="fade" hideEffect="fade">
+                                                <p:commandButton value="Sim" style="margin-left: 20%"
+                                                                 type="button" styleClass="ui-confirmdialog-yes btn-danger"/>
+                                                <p:commandButton value="Não" style="margin-right: 20%"
+                                                                 type="button" styleClass="ui-confirmdialog-no btn-info" />
+
+                                        </p:confirmDialog>
+
+                                    <p:commandButton styleClass="btn-xs btn-warning" icon="fa fa-edit" title="Editar"
+                                        update="dlgNovoCentroCusto"
+                                        oncomplete="PF('DialogNovoCentroCusto').show()">
+                                        <f:setPropertyActionListener value="#{centroCusto}"
+                                                                     target="#{centroCustoMB.novoCentroCusto}"/>
+                                    </p:commandButton>
+                                    #{centroCusto.codigo} - #{centroCusto.nome} - #{centroCusto.descricao}
+                                </p:dataList>
+                            </p:rowExpansion>
+
+
+                        </p:dataTable>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+        </h:form>
+
+
+        <p:dialog style="text-align:center" widgetVar="DialogNovoCentroCusto" id="dlgNovoCentroCusto"
+                  modal="true" showEffect="fade" hideEffect="fade" header="NOVO CENTRO DE CUSTO"
+                  responsive="true" styleClass="box-success"
+                  closable="true" resizable="false">
+
+            <p:ajax event="close" update="usersTable:centrosCusto" listener="#{centroCustoMB.limpaCentroCusto()}" />
+
+            <h:form id="formCadastroCentroCusto">
+
+                <p:growl id="msgsCadastro" sticky="false" life="4000" />
+
+                <p:panel header="#{centroCustoMB.novoCentroCusto.setor.codigo} - #{centroCustoMB.novoCentroCusto.setor.nome}
+                        #{centroCustoMB.novoCentroCusto.setor.unidade.nome}">
+                    <p:panelGrid columns="2">
+
+
+                        <p:outputLabel value="CÓDIGO"/>
+                        <p:inputMask mask="9999" required="true"
+                                     requiredMessage="O campo 'CÓDIGO' precisa estar preenchido"
+                                     value="#{centroCustoMB.novoCentroCusto.codigo}"/>
+
+                        <p:outputLabel value="NOME"/>
+                        <p:inputText required="true"
+                                     requiredMessage="O campo 'NOME' precisa estar preenchido"
+                                     value="#{centroCustoMB.novoCentroCusto.nome}"/>
+
+                        <p:outputLabel value="DESCRIÇAO"/>
+                        <p:inputText required="true"
+                                     requiredMessage="O campo 'DESCRIÇÃO' precisa estar preenchido"
+                                     value="#{centroCustoMB.novoCentroCusto.descricao}"/>
+
+
+
+                    </p:panelGrid>
+
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:commandButton value="SALVAR" styleClass="btn-success" update="msgsCadastro , form"
+                                             action="#{centroCustoMB.salvarCentroCusto()}" />
+                        </div>
+                    </f:facet>
+
+                </p:panel>
+
+            </h:form>
+
+        </p:dialog>
+
+
+
+        <p:dialog style="text-align:center" widgetVar="DialogNovoSetor" id="dlgNovoSetor"
+                  modal="true" showEffect="fade" hideEffect="fade"
+                  header="#{setorMB.novoSetor.id == null ? 'NOVO SETOR' : 'EDITAR SETOR'}"
+                  responsive="true" styleClass="box-success"
+                  closable="true" resizable="false">
+
+            <p:ajax event="close" listener="#{setorMB.limpaNovoSetor()}" update="usersTable"/>
+
+            <h:form id="formCadastroSetor">
+
+                <p:panel>
+
+                    <p:panelGrid columns="2">
+
+                        <p:outputLabel value="UNIDADE"/>
+                        <p:selectOneMenu disabled="#{!(setorMB.novoSetor.id == null)}"
+                                         appendTo="@this" value="#{setorMB.novoSetor.unidade}" required="true"
+                                         converter="unidadeConverter" id="novaUnidade"
+                                         requiredMessage="Preencha o campo 'UNIDADE' ">
+                            <f:selectItem itemLabel="SELECIONE" noSelectionOption="true"/>
+                            <f:selectItems value="#{unidadeMB.unidades()}" var="unidade"
+                                           itemLabel="#{unidade.nome}" itemValue="#{unidade}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel value="CÓDIGO"/>
+                        <p:inputNumber maxValue="99" decimalPlaces="0" required="true"
+                                     requiredMessage="O campo 'CÓDIGO' precisa estar preenchido"
+                                     value="#{setorMB.novoSetor.codigo}" />
+
+                        <p:outputLabel value="ANDAR"/>
+                        <p:inputNumber maxValue="99" decimalPlaces="0" required="true"
+                                     requiredMessage="O campo 'ANDAR' precisa estar preenchido"
+                                     value="#{setorMB.novoSetor.andar}" />
+
+                        <p:outputLabel value="NOME"/>
+                        <p:inputText required="true"
+                                     requiredMessage="O campo 'NOME' precisa estar preenchido"
+                                     value="#{setorMB.novoSetor.nome}" />
+
+                        <p:outputLabel value="GESTOR"/>
+                        <p:inputText required="true"
+                                     requiredMessage="O campo 'GESTOR' precisa estar preenchido"
+                                     value="#{setorMB.novoSetor.gestor}"/>
+                    </p:panelGrid>
+
+                    <f:facet name="footer">
+                        <div align="center">
+                            <p:commandButton value="SALVAR" styleClass="btn-success"
+                                             action="#{setorMB.salvarSetor()}"/>
+                        </div>
+                    </f:facet>
+                </p:panel>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="APLICAÇÕES" widgetVar="DialogAplicações" id="dlgAplicacoes"  hideEffect="fade"
+                    styleClass="box-success" style="text-align: left" modal="true" showEffect="fade" width="20%"  >
+
+            <h:form id="frm">
+            <p:dataList id="aplicacoes" value="#{aplicacaoMB.retornaAplicacoes()}"
+                        type="unordered" itemType="none" paginator="true" rows="10" styleClass="paginated"
+                        var="aplicacao" >
+                    <f:facet name="header">
+                        <div align="left">
+                        <p:commandButton styleClass="btn-xs btn-info" icon="fa fa-plus"
+                                         update="campoNovaAplicacao , btNovaAplicacao , aplicacoes "
+                                         title="Adicionar Aplicação" action="#{aplicacaoMB.configuraNovaAplicacao()}" />
+                        ADICIONAR
+                        </div>
+                    </f:facet>
+
+                    <p:commandButton styleClass="btn-xs btn-warning" icon="fa fa-edit" title="Editar"
+                                     action="#{aplicacaoMB.carregaAplicacaoUpdate(aplicacao.id)}"
+                                     update="campoNovaAplicacao , btNovaAplicacao , aplicacoes" />
+
+                    <p:commandButton styleClass="btn-xs btn-danger" icon="fa fa-trash" title="Excluir"
+                                     update="msgs , aplicacoes"  action="#{aplicacaoMB.excluirAplicacao(aplicacao.id)}">
+                       <p:confirm  header="CONFIRMAÇÃO" message="DESEJA EXCLUIR?" icon="pi pi-exclamation-triangle" />
+
+                    </p:commandButton>
+
+
+                <p:confirmDialog closable="false" style="text-align: center" width="15%"
+                                 global="true" showEffect="fade" hideEffect="fade">
+
+                    <p:commandButton value="Sim" style="margin-left: 20%"
+                                     type="button" styleClass="ui-confirmdialog-yes btn-danger"/>
+                    <p:commandButton value="Não" style="margin-right: 20%"
+                                     type="button" styleClass="ui-confirmdialog-no btn-info" />
+
+                </p:confirmDialog>
+                    <p:outputLabel value="-#{aplicacao.nome}"/>
+
+                <f:facet name="footer" >
+                    <p:inputText rendered="#{aplicacaoMB.novaAplicacao ==  null ? false : true}" placeholder="NOME"
+                                 style="width: 50%" id="campoNovaAplicacao" value="#{aplicacaoMB.novaAplicacao.nome}"/>
+                    <p:commandButton rendered="#{aplicacaoMB.novaAplicacao ==  null ? false : true}"
+                                     action="#{aplicacaoMB.salvaNovaAplicao()}" styleClass="btn-success"
+                                     value="SALVAR" id="btNovaAplicacao" update="aplicacoes"/>
+                </f:facet>
+            </p:dataList>
+            </h:form>
+
+        </p:dialog>
+
+        <p:dialog header="#{setorMB.setor.nome}" widgetVar="DialogUsuariosSetor" id="dlgUsuariosSetor"  hideEffect="fade"
+                  styleClass="box-success" style="text-align: left" modal="true" showEffect="fade" width="20%"  >
+
+
+                <p:dataList id="usuarios" value="#{setorMB.usuariosSetor}"
+                            type="ordered" itemType="none" paginator="true" rows="10" styleClass="paginated"
+                            var="usuario"  >
+                    <f:facet name="header">
+                        <p:outputLabel value="USUÁRIOS" />
+                    </f:facet>
+                    <p:outputLabel value="- #{usuario.nome}"/>
+                </p:dataList>
+
+        </p:dialog>
+
+
+
+
+
+    </ui:define>
+
+</ui:composition>

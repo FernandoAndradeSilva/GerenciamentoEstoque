@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+
+<f:event listener="#{usuarioMB.redirecionaUsuarioLogadoIndex()}"
+		 type="preRenderView"/>
+
+
+
+<h:head>
+
+	<title>GERENCIAMENTO DE ESTOQUE</title>
+	<h:outputStylesheet library="css" name="style-login.css" />
+	<h:outputStylesheet library="css" name="bootstrap.min.css" />
+
+</h:head>
+
+
+
+
+<h:body styleClass="flat-blue login-page">
+
+
+	
+	<div id="top-header">
+		<ui:insert name="top-header">
+			<p:growl id="msg" sticky="false" life="4000" />
+		</ui:insert>
+	</div>
+
+
+	<p:growl id="msg1" sticky="false" life="4000" />
+
+	<div class="container">
+
+		<div class="login-box">
+			<div>
+				<div class="login-form row">
+
+					<div id="header">
+						<div class="col-sm-12 text-center login-header">
+
+							<p:graphicImage url="/resources/images/logo-icn-azul.png"
+								width="200px" height="80px"></p:graphicImage>
+
+						</div>
+					</div>
+
+					<div class="col-sm-12">
+						<div class="login-body"
+							style="background-color: rgba(0, 0, 0, 10%)">
+
+							<div class="progress hidden" id="login-progress">
+								<div
+									class="progress-bar progress-bar-success progress-bar-striped active"
+									role="progressbar" aria-valuenow="100" aria-valuemin="0"
+									aria-valuemax="100" style="width: 100%">Log In...</div>
+							</div>
+
+
+
+
+
+
+							<div id="content">
+								<h:form id="frm">
+
+
+									<div class="control">
+										<p:inputText value="#{usuarioMB.email}" styleClass="form-control" placeholder="E-mail"
+											size="30" />
+									</div>
+									<div class="control">
+										<p:password value="#{usuarioMB.senha}" styleClass="form-control" placeholder="Senha"
+											size="30" />
+									</div>
+									<div class="login-button text-center">
+										<p:commandButton value="ENTRAR" action="#{usuarioMB.logar()}" update="frm , msg"
+											styleClass="btn-primary" />
+									</div>
+								</h:form>
+							</div>
+						</div>
+
+						<h:form>
+
+						<div id="footer">
+							<div class="login-footer">
+
+								<div class="col-sm-6 text-left">
+									<p:commandLink onclick="PF('DialogRedefinirSenha').show()"
+										style="color: white;" value="ESQUECEU A SENHA?" >
+
+									</p:commandLink>
+								</div>
+
+								<div class="col-sm-6 text-right">
+
+
+										<p:commandLink onclick="PF('DialogNovoUsuario').show()"
+											style="color: white;" value="CADASTRAR">
+
+										</p:commandLink>
+
+
+								</div>
+
+							</div>
+						</div>
+
+						</h:form>
+
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<p:dialog widgetVar="DialogNovoUsuario" id="dlgNovoUsuario"
+		showEffect="fade" header="NOVO USUÁRIO" resizable="true"
+		hideEffect="fade" modal="true" responsive="true" width="300px"
+		closable="true" styleClass="box-info">
+
+		<p:ajax event="close" resetValues="true" update="form_novoUsuario" listener="#{usuarioMB.limpaUsuario()}"/>
+
+		<h:form id="form_novoUsuario">
+
+			<div class="text-center">
+				<p:panelGrid columns="1" layout="grid">
+					<p:selectOneMenu id="Unidade"  appendTo="@this"
+									 value="#{usuarioMB.novoUsuario.setor.unidade}"
+									 converter="unidadeConverter" >
+						<f:selectItem itemLabel="Selecione a Unidade" noSelectionOption="true" />
+						<f:selectItems value="#{unidadeMB.unidades()}" var="unidade"
+									   itemLabel="#{unidade.nome}" itemValue="#{unidade}"/>
+						<p:ajax event="change" update="Setor" listener="#{usuarioMB.selecionaUnidadeNovoUsuario()}"/>
+					</p:selectOneMenu>
+
+
+					<p:selectOneMenu appendTo="@this" id="Setor" value="#{usuarioMB.novoUsuario.setor}"
+									 converter="setorConverter" required="true"
+									 requiredMessage="Preencha o campo 'SETOR' ">
+						<f:selectItem itemLabel="Selecione o Setor" noSelectionOption="true"  />
+						<f:selectItems value="#{usuarioMB.novoUsuario.setor.unidade.setores}" var="setor"
+									   itemLabel="#{setor.nome}" itemValue="#{setor}" />
+					</p:selectOneMenu>
+
+
+					<p:inputText value="#{usuarioMB.novoUsuario.nome}" required="true"
+						styleClass="form-control" placeholder="Nome"
+						requiredMessage="Preencha o campo 'NOME'" />
+
+					<p:inputText  validator="#{usuarioMB.validaEmailCadastrado}" id="email"
+						value="#{usuarioMB.novoUsuario.email}" styleClass="form-control"
+						placeholder="E-mail" > 					
+
+					</p:inputText>
+						
+
+					<p:password required="true" requiredMessage="Preencha o campo 'SENHA'" value="#{usuarioMB.novoUsuario.senha}"
+						styleClass="form-control" placeholder="Senha" />
+
+
+
+
+					<p:commandButton update="msg1 , form_novoUsuario" value="SALVAR"
+						action="#{usuarioMB.cadastrarUsuario}" styleClass="btn-success" />
+
+				</p:panelGrid>
+			</div>
+		</h:form>
+
+
+	</p:dialog>
+
+
+
+	<p:dialog widgetVar="DialogRedefinirSenha" id="dlgRedefinirSenha"
+			  showEffect="fade" header="ESQUECI MINHA SENHA" resizable="true"
+			  hideEffect="fade" modal="true" responsive="true"
+			  closable="true" styleClass="box-info">
+
+		<p:ajax event="close" resetValues="true" update="formRedefinirSenha:em" />
+
+		<h:form id="formRedefinirSenha">
+
+			<p:growl id="growNovaSenha" sticky="false" life="4000" />
+
+
+
+				<p:panel >
+				<p:inputText style="width: 100%" value="#{usuarioMB.emailNovaSenha}" placeholder="E-mail" id="em"/>
+
+
+				<f:facet name="footer">
+					<div class="text-center">
+					<p:commandButton value="ENVIAR" action="#{usuarioMB.enviaNovaSenha()}" update="msg"/>
+
+					</div>
+				</f:facet>
+
+				</p:panel>
+
+
+		</h:form>
+
+
+	</p:dialog>
+
+
+
+</h:body>
+</html>

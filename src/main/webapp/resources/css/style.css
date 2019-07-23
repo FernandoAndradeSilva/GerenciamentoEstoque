@@ -1,0 +1,61 @@
+.btn-scrolltop {
+	display: none;
+	position: fixed;
+	bottom: 10px;
+	right: 20px;
+	width: 34px;
+	height: 34px;
+	color: rgb(238, 238, 238);
+	line-height: 34px;
+	text-align: center;
+	background-color: rgb(34, 45, 50);
+	cursor: pointer;
+	border-radius: 3px;
+	z-index: 99999;
+	opacity: 0.7;
+}
+
+.alertRep {
+	color: #FF6347;
+	font-weight: bolder;
+	text-align: center;
+	align-content: center;
+}
+
+.entradas {
+	color: blue;
+	font-weight: bolder;
+	text-align: center;
+	align-content: center;
+}
+
+.saidas {	
+	font-weight: bolder;
+	text-align: center;
+	align-content: center;
+}
+
+.saldos {
+	color: green;
+	font-weight: bolder;
+	text-align: center;
+	align-content: center;
+}
+
+.teste {
+	height: 23px;
+	width: 26px; 
+	
+}
+
+.disabled {
+    pointer-events:none; 
+    opacity:0.6;
+    display:none;         
+}
+
+/* #movimento > iframe{ */
+/* 	height: 500px; */
+/* 	width: 500px; */
+	
+/* }  */

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+	<style>
+.ui-dialog-title {
+	width: 88%;
+	display: flex;
+	justify-content: center;
+	margin-right: 0 !important;
+}
+
+.ui-dialog-buttonpane {
+	display: flex;
+	justify-content: right;
+
+}
+</style>
+
+	<ul class="nav navbar-nav" >
+
+		<li><a> <pe:gravatar id="userImage" value="nonexisting" /> <span
+				class="hidden-xs"> <b>INSITITUTO DE CIÊNCIAS NÁUTICAS</b>
+			</span>
+		</a></li>
+
+		<li class="dropdown"><a class="dropdown-toggle"
+			data-toggle="dropdown" href="#" id="layout-setup"> <i
+				class="fa fa-user"> </i> <p:spacer width="10" />
+			<p:outputLabel value="#{usuarioMB.usuario.nome}"/>
+		</a>
+
+			<ul class="dropdown-menu">
+
+				<li><a href="#" onclick="PF('DialogRedefinirSenha').show()"> <i
+						class="fa fa-repeat"></i> <b> REDEFINIR SENHA </b>
+				</a></li>
+
+				<li><a href="#" onclick="PF('DialogSair').show()"> <i
+						class="fa fa-close"></i> <b> SAIR </b>
+				</a></li>
+
+			</ul></li>
+
+	</ul>
+
+
+
+
+	<p:dialog  header="SAIR?"
+		styleClass="box-success" widgetVar="DialogSair" modal="true"
+		closable="false" showEffect="fade" hideEffect="fade"
+		appendTo="@(body)" id="dlgSair" resizable="false">
+
+		<h:form>
+
+			<p:panelGrid columns="2" layout="grid">
+			<p:commandButton style="text-align:left" action="#{usuarioMB.sairDoSistema()}" value="SIM"
+				styleClass="btn-danger" />
+
+			<p:commandButton  style="text-align:left" styleClass="btn-primary" value="NÃO"
+				onclick="PF('DialogSair').hide()" update="@none" process="@none">
+			</p:commandButton>
+			</p:panelGrid>
+			
+
+
+
+
+		</h:form>
+
+	</p:dialog>
+    <p:growl id="msg" sticky="false" life="6000"/>
+
+	<p:dialog  header="REDIFINIÇÃO DE SENHA"
+			   styleClass="box-success" widgetVar="DialogRedefinirSenha" modal="true"
+			   closable="true" showEffect="fade" hideEffect="fade"
+			   appendTo="@(body)" id="redefSenha" resizable="false">
+
+				<p:ajax event="close" resetValues="true" update="formRedefSenha" />
+
+		<h:form id="formRedefSenha">
+
+			<p:panel>
+
+
+			<p:panelGrid   columns="3" >
+
+				<p:outputLabel value="SENHA ATUAL"/>
+				<p:password id="senhaAtual" validator="#{usuarioMB.verificaSenhaAntiga}"  value="#{usuarioMB.senhaAntiga}">
+					<p:ajax event="change" update="msgSenhaAtual"/>
+				</p:password>
+				<p:message for="senhaAtual" id="msgSenhaAtual" display="icon"/>
+
+
+				<p:outputLabel value="NOVA SENHA"/>
+				<p:password id="novaSenha" validator="#{usuarioMB.verificaNovaSenha}" value="#{usuarioMB.novaSenha}" >
+					<p:ajax event="change" update="msgNovaSenha "  />
+				</p:password>
+				<p:message  for="novaSenha" id="msgNovaSenha" rendered="true" display="icon" />
+
+
+
+
+
+			</p:panelGrid>
+
+				<f:facet name="footer">
+					<div align="center">
+					<p:commandButton styleClass="btn-success" value="SALVAR" action="#{usuarioMB.redifineSenha()}"
+                                     update="msg"  />
+					</div>
+
+				</f:facet>
+
+			</p:panel>
+
+
+
+
+
+
+
+		</h:form>
+
+	</p:dialog>
+
+
+
+</ui:composition>

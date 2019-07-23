@@ -1,0 +1,209 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:adm="http://github.com/adminfaces">
+
+
+
+	<div class="box box-primary">
+		<div class="box-header with-border">
+
+			<p:growl id="growlSaidas" sticky="false" life="4000" />
+			<h:form id="entradas">
+				<div class="row">
+					<div class="col-sm-12">
+						<div class="pull-left">
+
+							<p:panelGrid style="text-align:center" id="buscaEntradas"
+										 columns="4">
+
+								<p:calendar size="8" placeholder="Data Inicial" id="bdDtInicial"
+											showOn="button" value="#{movimentacaoMB.dataInicial}">
+									<p:ajax event="dateSelect"
+											listener="#{movimentacaoMB.configuraMinData()}"
+											update="bdDtFinal" />
+								</p:calendar>
+
+								<p:calendar size="8" placeholder="Data Final" id="bdDtFinal"
+											mindate="#{movimentacaoMB.minDatePesquisa}" showOn="button"
+											value="#{movimentacaoMB.dataFinal}" />
+
+								<p:commandButton title="Buscar" icon="fa fa-search"
+												 update="movimentacaoTable" styleClass="btn-info" value="BUSCAR"
+												 resetValues="true" >
+								</p:commandButton>
+
+								<p:commandButton title="Limpar Busca"
+												 action="#{movimentacaoMB.limpaBusca()}" icon="fa fa-remove"
+												 styleClass="btn-danger" value="LIMPAR"
+												 update="bdDtInicial , bdDtFinal">
+								</p:commandButton>
+
+							</p:panelGrid>
+
+
+						</div>
+
+						<div class="pull-right">
+							<p:selectOneMenu id="Unidade" converter="unidadeConverter"
+											 value="#{movimentacaoMB.unidadeUsuario}"
+											 rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5}">
+								<f:selectItems value="#{unidadeMB.unidades()}" var="unidade"
+											   itemLabel="#{unidade.nome}" itemValue="#{unidade}"/>
+								<p:ajax event="change" update="movimentacaoTable"/>
+							</p:selectOneMenu>
+						</div>
+					</div>
+				</div>
+				<p:separator />
+
+				<p:dataTable sortBy="#{movimentacao.id}" sortOrder="DESCENDING"
+					id="movimentacaoTable" widgetVar="saidaTable"
+					value="#{movimentacaoMB.movimentacoes('ENTRADA')}" var="movimentacao"
+					rowKey="#{movimentacao.id}" rows="10" paginator="true"
+					paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+					currentPageReportTemplate="" rowsPerPageTemplate="5,10,15,20,30">
+
+
+
+                    <p:column headerText="CÓDIGO" style="width: 10%; text-align: center"
+                              filterBy="#{movimentacao.item.codigo}"
+                              sortBy="#{movimentacao.item.codigo}" filterStyle=" width: 80%" filterMatchMode="contains">
+                        <p:outputLabel value="#{movimentacao.item.codigo}" />
+                    </p:column>
+
+					<p:column headerText="DESCRIÇÃO"
+						filterBy="#{movimentacao.item.descricao}"
+						sortBy="#{movimentacao.item.descricao}" filterMatchMode="contains">
+						<p:outputLabel value="#{movimentacao.item.descricao}" />
+					</p:column>
+
+                    <p:column style="text-align: center ;  width: 10%" headerText="DATA">
+                        <p:outputLabel value="#{movimentacao.data}">
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: center ;  width: 10% " headerText="NOTA FISCAL" >
+                        <p:commandButton title="ADICIONAR NOTA FISCAL" icon="fa fa-plus-square" styleClass="btn-warning"
+                                         oncomplete="PF('DialogNF').show()" style="width: 25%"
+                                         rendered="#{movimentacao.notaFiscal == '' and movimentacao.cupomFiscal != '' ? true : false}">
+                            <f:setPropertyActionListener value="#{movimentacao}"
+                                                         target="#{movimentacaoMB.movimentacaoSelecionada}" />
+                        </p:commandButton>
+                        <p:outputLabel rendered="#{movimentacao.notaFiscal == '' ? false : true}"
+                                       value="#{movimentacao.notaFiscal}" />
+                    </p:column>
+
+                    <p:column style="text-align: center ;  width: 10%" headerText="CUPOM FISCAL">
+                        <p:outputLabel value="#{movimentacao.cupomFiscal}" />
+                    </p:column>
+
+
+                    <p:column headerText="QUANTIDADE" style="text-align: center ; width: 10%">
+                        <p:outputLabel value="#{movimentacao.quantidade}" />
+                    </p:column>
+
+					<p:column headerText="VALOR DO ITEM (R$)" style="text-align: center ;  width: 10%">
+
+						<p:outputLabel value="#{movimentacao.valor / movimentacao.quantidade}">
+							<f:convertNumber minFractionDigits="2" />
+						</p:outputLabel>
+					</p:column>
+
+                    <p:column headerText="CUSTO DA ENTRADA (R$)" style="text-align: center ;  width: 10%">
+
+                        <p:outputLabel value="#{movimentacao.valor}">
+                            <f:convertNumber minFractionDigits="2" />
+                        </p:outputLabel>
+                    </p:column>
+					<p:column
+						style="text-align: center; font-weight: bolder; width:5%">
+						<p:commandButton rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5  ? 'false' : 'true'}"
+										 title="Ações" styleClass="btn-sm btn-info"
+										 id="dynaButton" type="button" icon="fa fa-paper-plane" />
+
+						<p:tieredMenu overlay="true" trigger="dynaButton" my="left top"
+									  at="left bottom" style="width:200px">
+
+
+							<p:menuitem value="Observações" oncomplete="PF('DialogDetalhesMovimentacao').show()"
+										icon="fa fa-info-circle" update="dlgDetalhesMovimentacao">
+								<f:setPropertyActionListener value="#{movimentacao}"
+									target="#{movimentacaoMB.movimentacaoSelecionada}" />
+							</p:menuitem>
+
+
+							<p:menuitem value="Estornar" icon="fa fa-mail-reply"
+								update="dlgEstorno"
+								oncomplete="PF('DialogEstorno').show()">
+								<f:setPropertyActionListener value="#{movimentacao}"
+									target="#{estornoMB.estorno.movimentacao}" />
+
+
+							</p:menuitem>
+
+						</p:tieredMenu>
+
+						<p:commandButton rendered="#{usuarioMB.retornaNivelUsuarioDaSessao() == 5 ? 'true' : 'false'}"
+										 oncomplete="PF('DialogDetalhesMovimentacao').show()" styleClass="btn-sm btn-info"
+										 update="dlgDetalhesMovimentacao" icon="fa fa-info" process="@this">
+							<f:setPropertyActionListener value="#{movimentacao}"
+														 target="#{movimentacaoMB.movimentacaoSelecionada}" />
+
+						</p:commandButton>
+
+					</p:column>
+
+
+
+				</p:dataTable>
+
+
+			</h:form>
+
+
+			<p:dialog widgetVar="DialogNF" id="dlgNF"
+					  showEffect="fade" header="NOTA FISCAL" hideEffect="fade" modal="true" dynamic="true"
+					  responsive="true" closable="true" styleClass="box-success"
+					  appendTo="@(body)">
+
+				<p:ajax event="close" resetValues="true" listener="#{movimentacaoMB.limpaMovimentacaoSelecionada()}"
+					 update="tabInicial:entradas:movimentacaoTable"	/>
+
+				<h:form  id="formNF">
+
+					<p:panel>
+
+							<p:inputText required="true" value="#{movimentacaoMB.movimentacaoSelecionada.notaFiscal}"/>
+
+						<f:facet name="footer">
+							<div align="center" >
+								<p:commandButton  styleClass="btn-success" value="SALVAR" update="formNF , tabInicial:growlSaidas"
+												  action="#{movimentacaoMB.salvaNF()}" />
+							</div>
+						</f:facet>
+
+					</p:panel>
+
+				</h:form>
+
+			</p:dialog>
+
+
+
+
+
+		</div>
+
+	</div>
+
+
+
+
+
+
+</ui:composition>
